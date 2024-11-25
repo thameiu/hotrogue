@@ -6,7 +6,7 @@ import { initDB } from "../db/db";
 import bcrypt from 'bcrypt';
 
 export class UserController {
-    private static nextId = 1; // Simulate auto-incrementing ID
+    private static nextId = 1;
 
     static async createUser(req: Request, res: Response): Promise<Response> {
         try {
