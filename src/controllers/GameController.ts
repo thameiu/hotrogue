@@ -14,7 +14,6 @@ export class GameController {
 
     static async startGame(req: Request, res: Response): Promise<Response> {
         try {
-          
             const startGameDto = StartGameDto.fromRequest(req.body);
 
             const user = await AuthController.getUserByToken(req);
@@ -68,33 +67,49 @@ export class GameController {
     //     }
     // }
 
-    static async coinToss(req: Request, res: Response): Promise<Response> {
+    
+    static async tossCoin(req: Request, res: Response): Promise<Response> {
         try {
-          
-            const startGameDto = StartGameDto.fromRequest(req.body);
-
             const user = await AuthController.getUserByToken(req);
-            
-            if (!user) return res.status(401).json({ message: 'Invalid token' });
-
-            const newGame = new Game(
-                GameController.nextId++, 
-                user.id,
-                0,
-                startGameDto.category,
-                "ongoing",
-            );
-
+    
+            if (!user) return res.status(401).json({ message: "Invalid token" });
+    
+            const guess = req.body.guess?.toLowerCase();
+            if (!["heads", "tails"].includes(guess)) {
+                return res.status(400).json({ error: "Guess must be either 'heads' or 'tails'" });
+            }
+    
             const db = await initDB();
             const gameDAO = new GameDAO(db);
-      
-            await gameDAO.createGame(newGame);
-
-
-            return res.status(201).json({
-                message: "Game started succesfully ! Toss a coin !",
-                gameId: newGame.gameId,
-            });
+    
+            const game = await gameDAO.getOngoingGame(user.id);
+            if (!game) {
+                return res.status(404).json({ error: "No ongoing game found" });
+            }
+    
+            const coinResult = Math.random() < 0.5 ? "heads" : "tails";
+    
+            if (guess === coinResult) {
+                
+                game.score +=1;
+                await gameDAO.updateGame(game);
+    
+                return res.status(200).json({
+                    message: "You guessed correctly! Toss again!",
+                    coinResult,
+                    score: game.score,
+                });
+            } else {
+                
+                game.status = "finished";
+                await gameDAO.updateGame(game);
+    
+                return res.status(200).json({
+                    message: "You guessed wrong! Game over.",
+                    coinResult,
+                    finalScore: game.score,
+                });
+            }
         } catch (error: Error | any) {
             if (error instanceof Error) {
                 return res.status(400).json({ error: error.message });
@@ -102,5 +117,7 @@ export class GameController {
             return res.status(400).json({ error: "An unknown error occurred" });
         }
     }
+    
+
 
 }

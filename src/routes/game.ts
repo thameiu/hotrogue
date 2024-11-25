@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.use(authMiddleware);
 router.post('/start', GameController.startGame);
+router.post('/toss-coin', GameController.tossCoin);
+
 
 
 export default router;

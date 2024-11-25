@@ -21,8 +21,14 @@ export class GameDAO {
     }
 
     async getOngoingGame(userId: number): Promise<Game | null> {
-        const row = await this.db.get('SELECT * FROM Games WHERE user = ? AND status = "ongoing"', [userId]);
+        const row = await this.db.get('SELECT * FROM Games WHERE user = ? AND status = "ongoing" LIMIT 1', [userId]);
         return row ? new Game(row.gameId, row.user, row.score, row.category, row.status) : null;
     }
+    
+    async updateGame(game: Game): Promise<void> {
+        const query = "UPDATE games SET score = ?, status = ? WHERE gameId = ?";
+        await this.db.run(query, [game.score, game.status, game.gameId]);
+    }
+    
 }
 
