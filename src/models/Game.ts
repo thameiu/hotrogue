@@ -2,7 +2,7 @@ export class Game {
     constructor(
         public gameId: number,
         public user: number,
-        public score: string,
+        public score: number,
         public category: string,
         public status: string,
     ) {}

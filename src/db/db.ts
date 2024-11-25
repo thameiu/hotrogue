@@ -27,7 +27,7 @@ export async function initDB() {
     CREATE TABLE IF NOT EXISTS Games (
       gameId INTEGER PRIMARY KEY,
       user INTEGER NOT NULL,
-      score TEXT NOT NULL,
+      score INTEGER NOT NULL,
       category TEXT NOT NULL,
       status TEXT NOT NULL,
       FOREIGN KEY(user) REFERENCES Users(id)

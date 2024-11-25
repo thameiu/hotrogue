@@ -14,5 +14,15 @@ export class GameDAO {
         const row = await this.db.get('SELECT * FROM Games WHERE gameId = ?', [gameId]);
         return row ? new Game(row.gameId, row.user, row.score, row.category, row.status) : null;
     }
+
+    async getGamesByUserId(userId: number): Promise<Game[]> {
+        const rows = await this.db.all('SELECT * FROM Games WHERE user = ?', [userId]);
+        return rows.map((row: any) => new Game(row.gameId, row.user, row.score, row.category, row.status));
+    }
+
+    async getOngoingGame(userId: number): Promise<Game | null> {
+        const row = await this.db.get('SELECT * FROM Games WHERE user = ? AND status = "ongoing"', [userId]);
+        return row ? new Game(row.gameId, row.user, row.score, row.category, row.status) : null;
+    }
 }
 

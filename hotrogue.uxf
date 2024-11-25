@@ -1,4 +1,4 @@
-<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>118</x><y>120</y><w>210</w><h>110</h></coordinates><panel_attributes>User
+<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>38</x><y>100</y><w>210</w><h>110</h></coordinates><panel_attributes>User
 --
 _id_
 email - unique
@@ -6,18 +6,18 @@ username - unique
 password
 ...
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>398</x><y>120</y><w>210</w><h>100</h></coordinates><panel_attributes>Stock
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>318</x><y>100</y><w>210</w><h>100</h></coordinates><panel_attributes>Stock
 --
 item - FK
 inventory - FK
 quantity
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>318</x><y>150</y><w>100</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;80;20</additional_attributes></element><element><id>Relation</id><coordinates><x>598</x><y>150</y><w>90</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;70;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>118</x><y>310</y><w>210</w><h>100</h></coordinates><panel_attributes>Game
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>238</x><y>130</y><w>100</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;80;20</additional_attributes></element><element><id>Relation</id><coordinates><x>518</x><y>130</y><w>90</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;70;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>38</x><y>290</y><w>210</w><h>100</h></coordinates><panel_attributes>Game
 --
 _id_
 score
 user - FK
-category - string</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>208</x><y>220</y><w>30</w><h>110</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;10;10;90</additional_attributes></element><element><id>UMLClass</id><coordinates><x>668</x><y>110</y><w>210</w><h>120</h></coordinates><panel_attributes>Item
+category - string</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>128</x><y>200</y><w>30</w><h>110</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;10;10;90</additional_attributes></element><element><id>UMLClass</id><coordinates><x>588</x><y>90</y><w>210</w><h>120</h></coordinates><panel_attributes>Item
 --
 _itemId_
 name - string
