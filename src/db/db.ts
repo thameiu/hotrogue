@@ -1,14 +1,12 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 
-// Function to initialize the database
-export async function initializeDatabase() {
+export async function initDB() {
   const db = await open({
     filename: './database.db',
     driver: sqlite3.Database,
   });
 
-  // Create tables
   await db.exec(`
     CREATE TABLE IF NOT EXISTS Users (
       id INTEGER PRIMARY KEY,

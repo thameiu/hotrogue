@@ -6,13 +6,13 @@ username - unique
 password
 ...
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>388</x><y>120</y><w>210</w><h>100</h></coordinates><panel_attributes>Stock
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>398</x><y>120</y><w>210</w><h>100</h></coordinates><panel_attributes>Stock
 --
 item - FK
 inventory - FK
 quantity
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>318</x><y>150</y><w>90</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;70;20</additional_attributes></element><element><id>Relation</id><coordinates><x>588</x><y>150</y><w>100</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;80;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>118</x><y>310</y><w>210</w><h>100</h></coordinates><panel_attributes>Game
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>318</x><y>150</y><w>100</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;80;20</additional_attributes></element><element><id>Relation</id><coordinates><x>598</x><y>150</y><w>90</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;70;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>118</x><y>310</y><w>210</w><h>100</h></coordinates><panel_attributes>Game
 --
 _id_
 score
