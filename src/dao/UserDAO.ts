@@ -5,18 +5,18 @@ export class UserDAO {
 
     async createUser(user: User): Promise<void> {
         await this.db.run(
-        'INSERT INTO Users (email, username, password) VALUES (?, ?, ?)',
-        [user.email, user.username, user.password]
+        'INSERT INTO Users (email, username, password, admin) VALUES (?, ?, ?, ?)',
+        [user.email, user.username, user.password, user.admin]
         );
     }
 
     async getUserById(id: number): Promise<User | null> {
         const row = await this.db.get('SELECT * FROM Users WHERE id = ?', [id]);
-        return row ? new User(row.id, row.email, row.username, row.password) : null;
+        return row ? new User(row.id, row.email, row.username, row.password,row.admin) : null;
     }
 
-    async getUserByMail(id: number): Promise<User | null> {
-        const row = await this.db.get('SELECT * FROM Users WHERE mail = ?', [id]);
-        return row ? new User(row.id, row.email, row.username, row.password) : null;
+    async getUserByMail(email: string): Promise<User | null> {
+        const row = await this.db.get('SELECT * FROM Users WHERE email = ?', [email]);
+        return row ? new User(row.id, row.email, row.username, row.password,row.admin) : null;
     }
 }

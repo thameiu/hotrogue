@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CreateUserDto } from "../dto/create-user.dto";
+import { CreateUserDto } from "../dto/user/create-user.dto";
 import { UserDAO } from "../dao/UserDAO";
 import { User } from "../models/User";
 import { initDB } from "../db/db";
@@ -15,10 +15,11 @@ export class UserController {
 
             const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
             const newUser = new User(
-                UserController.nextId++, // Auto-increment ID
+                UserController.nextId++, 
                 createUserDto.email,
                 createUserDto.username,
-                hashedPassword// Hashing should be added here
+                hashedPassword,
+                createUserDto.admin
             );
 
             const db = await initDB();
@@ -30,8 +31,11 @@ export class UserController {
                 message: "User created successfully",
                 user: newUser,
             });
-        } catch (error) {
-            return res.status(400).json({ error: error.message });
+        } catch (error: Error | any) {
+            if (error instanceof Error) {
+                return res.status(400).json({ error: error.message });
+            }
+            return res.status(400).json({ error: "An unknown error occurred" });
         }
     }
 

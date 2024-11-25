@@ -12,7 +12,8 @@ export async function initDB() {
       id INTEGER PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
       username TEXT NOT NULL,
-      password TEXT NOT NULL
+      password TEXT NOT NULL,
+      admin BOOLEAN NOT NULL DEFAULT FALSE
     );
     
     CREATE TABLE IF NOT EXISTS Items (
@@ -28,6 +29,7 @@ export async function initDB() {
       user INTEGER NOT NULL,
       score TEXT NOT NULL,
       category TEXT NOT NULL,
+      status TEXT NOT NULL,
       FOREIGN KEY(user) REFERENCES Users(id)
     );
 

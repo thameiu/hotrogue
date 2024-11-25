@@ -3,7 +3,8 @@ export class Game {
         public gameId: number,
         public user: number,
         public score: string,
-        public category: string
+        public category: string,
+        public status: string,
     ) {}
 
     getGameId() {
