@@ -10,9 +10,17 @@ export class UserController {
 
     static async createUser(req: Request, res: Response): Promise<Response> {
         try {
-          
             const createUserDto = CreateUserDto.fromRequest(req.body);
-
+    
+            const db = await initDB();
+            const userDAO = new UserDAO(db);
+    
+            
+            const existingUser = await userDAO.getUserByMail(createUserDto.email);
+            if (existingUser) {
+                return res.status(409).json({ error: "E-mail is already taken" });
+            }
+    
             const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
             const newUser = new User(
                 UserController.nextId++, 
@@ -21,15 +29,16 @@ export class UserController {
                 hashedPassword,
                 createUserDto.admin
             );
-
-            const db = await initDB();
-            const userDAO = new UserDAO(db);
-      
+    
             await userDAO.createUser(newUser);
-
+    
             return res.status(201).json({
                 message: "User created successfully",
-                user: newUser,
+                user: { 
+                    id: newUser.id, 
+                    email: newUser.email, 
+                    username: newUser.username 
+                },
             });
         } catch (error: Error | any) {
             if (error instanceof Error) {
@@ -38,5 +47,6 @@ export class UserController {
             return res.status(400).json({ error: "An unknown error occurred" });
         }
     }
+    
 
 }
