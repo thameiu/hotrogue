@@ -17,7 +17,7 @@ export async function initDB() {
     );
     
     CREATE TABLE IF NOT EXISTS Items (
-      itemId INTEGER PRIMARY KEY,
+      itemId TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       description TEXT,
       rarity INTEGER NOT NULL,

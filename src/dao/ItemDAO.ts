@@ -5,12 +5,12 @@ export class ItemDAO {
 
     async createItem(item: Item): Promise<void> {
         await this.db.run(
-        'INSERT INTO Items (name, description, rarity, maxQuantity) VALUES (?, ?, ?, ?)',
-        [item.name, item.description, item.rarity, item.maxQuantity]
+        'INSERT INTO Items (itemId, name, description, rarity, maxQuantity) VALUES (?, ?, ?, ?, ?)',
+        [item.itemId, item.name, item.description, item.rarity, item.maxQuantity]
         );
     }
 
-    async getItemById(itemId: number): Promise<Item | null> {
+    async getItemById(itemId: string): Promise<Item | null> {
         const row = await this.db.get('SELECT * FROM Items WHERE itemId = ?', [itemId]);
         return row
         ? new Item(row.itemId, row.name, row.description, row.rarity, row.maxQuantity)

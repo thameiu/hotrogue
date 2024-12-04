@@ -1,6 +1,6 @@
 export class Item {
     constructor(
-        public itemId: number,
+        public itemId: string,
         public name: string,
         public description: string,
         public rarity: number,
