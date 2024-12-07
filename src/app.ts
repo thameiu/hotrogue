@@ -18,6 +18,7 @@ app.use('/auth', authRoutes);
 app.use('/game', gameRoutes);
 app.use('/item', itemRoutes);
 
+app.get("/", (req, res) => res.send("HOTROGUE !!!!") as any);
 
 
 app.listen(PORT, () => {
