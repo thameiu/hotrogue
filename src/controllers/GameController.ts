@@ -204,9 +204,9 @@ export class GameController {
         }
     
         if (heavyLeadSide === "heads") {
-            baseProbability += 0.10;
+            baseProbability += 0.12;
         } else if (heavyLeadSide === "tails") {
-            baseProbability -= 0.10;
+            baseProbability -= 0.12;
         }
     
         baseProbability = Math.min(Math.max(baseProbability, 0), 1);

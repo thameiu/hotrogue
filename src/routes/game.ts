@@ -4,9 +4,9 @@ import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-router.use(authMiddleware);
-router.post('/start', GameController.startGame);
-router.post('/toss-coin', GameController.tossCoin);
+router.use(authMiddleware as any);
+router.post('/start', GameController.startGame as any);
+router.post('/toss-coin', GameController.tossCoin as any);
 
 
 

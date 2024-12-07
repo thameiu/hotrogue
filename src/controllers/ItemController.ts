@@ -43,6 +43,9 @@ export class ItemController {
         // return await this.itemDAO.getItemById(itemId);
     }
 
+    //TODO : modifier la fct pour qu'elle puisse donner + d'un item par point
+    //TODO : monter les maxQuantity des items
+
     static async getRewards(game: Game) {
         const db = await initDB();
         const itemDAO = new ItemDAO(db);
@@ -99,8 +102,7 @@ export class ItemController {
             return acc;
         }, []);
     }
-    
-            
+
 }
     
 
