@@ -34,12 +34,21 @@ export async function initDB() {
     );
 
     CREATE TABLE IF NOT EXISTS Stock (
-      item INTEGER NOT NULL,
+      item TEXT NOT NULL,
       user INTEGER NOT NULL,
       quantity INTEGER NOT NULL,
       PRIMARY KEY (item, user),
       FOREIGN KEY(item) REFERENCES Items(itemId),
       FOREIGN KEY(user) REFERENCES Users(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS GameItem (
+      item TEXT NOT NULL,
+      game INTEGER NOT NULL,
+      quantity INTEGER NOT NULL,
+      PRIMARY KEY (item, game),
+      FOREIGN KEY(item) REFERENCES Items(itemId),
+      FOREIGN KEY(game) REFERENCES Games(gameId)
     );
   `);
 
