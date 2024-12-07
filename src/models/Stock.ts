@@ -1,6 +1,6 @@
 export class Stock {
     constructor(
-        public item: number,
+        public item: string,
         public user: number,
         public quantity: number,
     ) {}

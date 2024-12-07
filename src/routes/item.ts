@@ -4,7 +4,7 @@ import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-router.use(authMiddleware);
+router.use(authMiddleware); //TODO : add admin middleware
 router.post('/create', ItemController.createItem);
 
 
