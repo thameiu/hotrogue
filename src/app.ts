@@ -24,3 +24,5 @@ app.get("/", (req, res) => res.send("HOTROGUE !!!!") as any);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+module.exports = app;
