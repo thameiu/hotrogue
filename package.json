@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "start": "node dist/api/src/app.js",
+    "start": "node dist/src/app.js",
     "db": "ts-node src/db/db.ts",
-    "build": "tsc --outDir dist/api",
+    "build": "tsc --outDir dist",
     "test": "jest"
   },
   "devDependencies": {
