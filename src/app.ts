@@ -20,6 +20,7 @@ app.use('/item', itemRoutes);
 
 app.get("/", (req, res) => res.send("HOTROGUE !!!!") as any);
 
+app.get("/home", (req, res) => res.send("bonjour") as any);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
