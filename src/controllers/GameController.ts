@@ -12,6 +12,7 @@ import { ItemController } from "./ItemController";
 import { StockDAO } from "../dao/StockDAO";
 import { GameItem } from "../models/GameItem";
 import { GameItemDAO } from "../dao/GameItemDAO";
+import { Stock } from "../models/Stock";
 
 export class GameController {
     private static nextId = 1;
@@ -177,87 +178,100 @@ export class GameController {
 
             // If guess is correct
             if (guess === coinResult) {
-                game.score += 1;
-                await gameDAO.updateGame(game);
-    
-                if (items?.lead?.quantity) {
-                    const userStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
-                    if (userStock) {
-                        userStock.quantity -= 1;
-                        await stockDAO.updateStock(userStock);
-                    }
-                }
-                if (items?.heavyLead?.quantity) {
-                    const userStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
-                    if (userStock) {
-                        userStock.quantity -= 1;
-                        await stockDAO.updateStock(userStock);
-                    }
-                }
-    
-                const rewards = await ItemController.getRewards(game);
-                const inventory = await ItemController.getUserStocks(user.id);
-    
-                return res.status(200).json({
-                    message: "You guessed correctly! Toss again!",
-                    coinResult,
-                    score: game.score,
-                    rewards,
-                    inventory,
-                });
+                return GameController.correctGuess(req,res,user,game,gameDAO,stockDAO,coinResult);
             }
     
             // If guess is incorrect and spring is used
             if (items?.spring && userSpringStock ) {
-                
-                userSpringStock.quantity -= 1;
-                await stockDAO.updateStock(userSpringStock);
-    
-                if (existingSpring) {
-                    existingSpring.quantity = 1; // Update spring usage for this game
-                    await gameItemDAO.updateGameItem(existingSpring);
-                }
-    
-                const inventory = await ItemController.getUserStocks(user.id);
-    
-                return res.status(200).json({
-                    message: "You guessed wrong, but your spring saved you! Toss again!",
-                    coinResult,
-                    score: game.score,
-                    inventory,
-                });
+                return GameController.springSave(req,res,user,userSpringStock,existingSpring,game,gameDAO,stockDAO,gameItemDAO,coinResult);
             }
     
             // If guess is incorrect and no spring is used
-            game.status = "finished";
-            await gameDAO.updateGame(game);
-    
-            if (items?.lead?.quantity) {
-                const userStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
-                if (userStock) {
-                    userStock.quantity -= items?.lead?.quantity;
-                    await stockDAO.updateStock(userStock);
-                }
-            }
-            if (items?.heavyLead?.quantity) {
-                const userStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
-                if (userStock) {
-                    userStock.quantity -= items?.heavyLead?.quantity;
-                    await stockDAO.updateStock(userStock);
-                }
-            }
-    
-            const rewards = await ItemController.getRewards(game);
-    
-            return res.status(200).json({
-                message: "You guessed wrong! Game over.",
-                coinResult,
-                finalScore: game.score,
-                rewards,
-            });
+            return GameController.wrongGuess(req,res,user,game,gameDAO,stockDAO,gameItemDAO,coinResult);
+
         } catch (error: Error | any) {
             return res.status(400).json({ error: error.message });
         }
     }
 
+    static async correctGuess(req:Request,res:Response,user:User,game:Game,gameDAO:GameDAO,stockDAO:StockDAO,coinResult:string):Promise<Response>{
+        game.score += 1;
+        await gameDAO.updateGame(game);
+        const items = req.body.items;
+        
+        if (items?.lead?.quantity) {
+            const userStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
+            if (userStock) {
+                userStock.quantity -= 1;
+                await stockDAO.updateStock(userStock);
+            }
+        }
+        if (items?.heavyLead?.quantity) {
+            const userStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
+            if (userStock) {
+                userStock.quantity -= 1;
+                await stockDAO.updateStock(userStock);
+            }
+        }
+
+        const rewards = await ItemController.getRewards(game);
+        const inventory = await ItemController.getUserStocks(user.id);
+
+        return res.status(200).json({
+            message: "You guessed correctly! Toss again!",
+            coinResult,
+            score: game.score,
+            rewards,
+            inventory,
+        });
+    }
+
+    static async springSave(req:Request,res:Response,user:User,userSpringStock:Stock,existingSpring:GameItem|null,game:Game,gameDAO:GameDAO,stockDAO:StockDAO,gameItemDAO:GameItemDAO,coinResult:string):Promise<Response>{
+        userSpringStock.quantity -= 1;
+        await stockDAO.updateStock(userSpringStock);
+
+        if (existingSpring) {
+            existingSpring.quantity = 1;
+            await gameItemDAO.updateGameItem(existingSpring);
+        }
+
+        const inventory = await ItemController.getUserStocks(user.id);
+
+        return res.status(200).json({
+            message: "You guessed wrong, but your spring saved you! Toss again!",
+            coinResult,
+            score: game.score,
+            inventory,
+        });
+    }
+
+    static async wrongGuess(req:Request,res:Response,user:User,game:Game,gameDAO:GameDAO,stockDAO:StockDAO,gameItemDAO:GameItemDAO,coinResult:string):Promise<Response>{
+        game.status = "finished";
+        await gameDAO.updateGame(game);
+        const items = req.body.items;
+
+        if (items?.lead?.quantity) {
+            const userStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
+            if (userStock) {
+                userStock.quantity -= items?.lead?.quantity;
+                await stockDAO.updateStock(userStock);
+            }
+        }
+        if (items?.heavyLead?.quantity) {
+            const userStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
+            if (userStock) {
+                userStock.quantity -= items?.heavyLead?.quantity;
+                await stockDAO.updateStock(userStock);
+            }
+        }
+
+        const rewards = await ItemController.getRewards(game);
+
+        return res.status(200).json({
+            message: "You guessed wrong! Game over.",
+            coinResult,
+            finalScore: game.score,
+            rewards,
+        });
+    }
 }
