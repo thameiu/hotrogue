@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node dist/src/index.js",
+    "start": "node dist/api/index.js",
     "db": "ts-node src/db/db.ts",
     "build": "tsc --outDir dist",
     "test": "jest",
