@@ -10,6 +10,8 @@ import { AuthController } from "./AuthController";
 import { GameDAO } from "../dao/GameDAO";
 import { ItemController } from "./ItemController";
 import { StockDAO } from "../dao/StockDAO";
+import { GameItem } from "../models/GameItem";
+import { GameItemDAO } from "../dao/GameItemDAO";
 
 export class GameController {
     private static nextId = 1;
@@ -69,102 +71,7 @@ export class GameController {
     //     }
     // }
 
-    static async tossCoin(req: Request, res: Response): Promise<Response> {
-        try {
-            const user = await AuthController.getUserByToken(req);
     
-            if (!user) return res.status(401).json({ message: "Invalid token" });
-    
-            const guess = req.body.guess?.toLowerCase();
-            if (!["heads", "tails"].includes(guess)) {
-                return res.status(400).json({ error: "Guess must be either 'heads' or 'tails'" });
-            }
-    
-            const db = await initDB();
-            const stockDAO = new StockDAO(db);
-            const gameDAO = new GameDAO(db);
-    
-            const game = await gameDAO.getOngoingGame(user.id);
-            if (!game) {
-                return res.status(404).json({ error: "No ongoing game found" });
-            }
-            
-            const items = req.body.items;
-            
-            const totalLeads = (items?.lead?.quantity || 0) + (items?.heavyLead?.quantity || 0) * 2;
-    
-            if (totalLeads > 5) { // Maximum 5 leads can be used
-                return res.status(400).json({ error: "You can only use up to 5 leads in total (including heavyLeads)" });
-            }
-    
-            const leadWeight = await GameController.calculateWeight("lead", items?.lead, user, stockDAO, 0.05);
-            const heavyLeadWeight = await GameController.calculateWeight("heavyLead", items?.heavyLead, user, stockDAO, 0.10);
-    
-            const totalWeight = leadWeight + heavyLeadWeight;
-    
-            const coinResult = GameController.getWeightedResult(guess, totalWeight, items?.lead?.side, items?.heavyLead?.side);
-    
-            if (guess === coinResult) { // The game continues, one item of each type used is consumed
-                
-                game.score += 1;
-                await gameDAO.updateGame(game);
-    
-                if (items?.lead?.quantity) {
-                    const userStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
-                    if (userStock) {
-                        userStock.quantity -= 1; 
-                        await stockDAO.updateStock(userStock);
-                    }
-                }
-                if (items?.heavyLead?.quantity) {
-                    const userStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
-                    if (userStock) {
-                        userStock.quantity -= 1; 
-                        await stockDAO.updateStock(userStock);
-                    }
-                }
-    
-                return res.status(200).json({
-                    message: "You guessed correctly! Toss again!",
-                    coinResult,
-                    score: game.score,
-                });
-            } else { // You lose, every item on the coin is lost
-                
-                game.status = "finished";
-                await gameDAO.updateGame(game);
-    
-                const rewards = await ItemController.getRewards(game);
-    
-                if (items?.lead?.quantity) {
-                    const userStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
-                    if (userStock) {
-                        userStock.quantity -= items?.lead?.quantity; 
-                        await stockDAO.updateStock(userStock);
-                    }
-                }
-                if (items?.heavyLead?.quantity) {
-                    const userStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
-                    if (userStock) {
-                        userStock.quantity -= items?.heavyLead?.quantity;
-                        await stockDAO.updateStock(userStock);
-                    }
-                }
-    
-                return res.status(200).json({
-                    message: "You guessed wrong! Game over.",
-                    coinResult,
-                    finalScore: game.score,
-                    rewards,
-                });
-            }
-        } catch (error: Error | any) {
-            if (error instanceof Error) {
-                return res.status(400).json({ error: error.message });
-            }
-            return res.status(400).json({ error: "An unknown error occurred" });
-        }
-    }
     
     static async calculateWeight(
         itemName: string,
@@ -212,6 +119,145 @@ export class GameController {
         baseProbability = Math.min(Math.max(baseProbability, 0), 1);
     
         return Math.random() < baseProbability ? "heads" : "tails";
+    }
+
+
+    static async tossCoin(req: Request, res: Response): Promise<Response> {
+        try {
+            const user = await AuthController.getUserByToken(req);
+    
+            if (!user) return res.status(401).json({ message: "Invalid token" });
+    
+            const guess = req.body.guess?.toLowerCase();
+            if (!["heads", "tails"].includes(guess)) {
+                return res.status(400).json({ error: "Guess must be either 'heads' or 'tails'" });
+            }
+    
+            const db = await initDB();
+            const stockDAO = new StockDAO(db);
+            const gameDAO = new GameDAO(db);
+            const gameItemDAO = new GameItemDAO(db);
+    
+            const game = await gameDAO.getOngoingGame(user.id);
+            if (!game) {
+                return res.status(404).json({ error: "No ongoing game found" });
+            }
+    
+            const items = req.body.items;
+    
+            const totalLeads = (items?.lead?.quantity || 0) + (items?.heavyLead?.quantity || 0) * 2;
+    
+            if (totalLeads > 5) {
+                return res.status(400).json({ error: "You can only use up to 5 leads in total (including heavyLeads)" });
+            }
+    
+            const leadWeight = await GameController.calculateWeight("lead", items?.lead, user, stockDAO, 0.05);
+            const heavyLeadWeight = await GameController.calculateWeight("heavyLead", items?.heavyLead, user, stockDAO, 0.10);
+    
+            const totalWeight = leadWeight + heavyLeadWeight;
+    
+            const coinResult = GameController.getWeightedResult(guess, totalWeight, items?.lead?.side, items?.heavyLead?.side);
+    
+            
+            const existingSpring = await gameItemDAO.getGameItemByGameAndItem(game.gameId, "spring");
+            const userSpringStock = await stockDAO.getStockByUserAndItem(user.id, "spring");
+
+            if (items?.spring){
+                if (!userSpringStock || userSpringStock.quantity < 1) {
+                    return res.status(400).json({ error: "You don't have any springs in your inventory." });
+                }
+                if (existingSpring && existingSpring.quantity > 0) {
+                    return res.status(400).json({ error: "You can only use one spring per game.",message:existingSpring });
+                }
+                if (!existingSpring) {
+                    const newSpringGameItem = new GameItem("spring", game.gameId, 0);
+                    await gameItemDAO.createGameItem(newSpringGameItem);
+                }
+            }
+
+            // If guess is correct
+            if (guess === coinResult) {
+                game.score += 1;
+                await gameDAO.updateGame(game);
+    
+                if (items?.lead?.quantity) {
+                    const userStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
+                    if (userStock) {
+                        userStock.quantity -= 1;
+                        await stockDAO.updateStock(userStock);
+                    }
+                }
+                if (items?.heavyLead?.quantity) {
+                    const userStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
+                    if (userStock) {
+                        userStock.quantity -= 1;
+                        await stockDAO.updateStock(userStock);
+                    }
+                }
+    
+                const rewards = await ItemController.getRewards(game);
+                const inventory = await ItemController.getUserStocks(user.id);
+    
+                return res.status(200).json({
+                    message: "You guessed correctly! Toss again!",
+                    coinResult,
+                    score: game.score,
+                    rewards,
+                    inventory,
+                });
+            }
+    
+            // If guess is incorrect and spring is used
+            if (items?.spring && userSpringStock ) {
+                
+                userSpringStock.quantity -= 1;
+                await stockDAO.updateStock(userSpringStock);
+    
+                if (existingSpring) {
+                    existingSpring.quantity = 1; // Update spring usage for this game
+                    await gameItemDAO.updateGameItem(existingSpring);
+                }
+    
+                const inventory = await ItemController.getUserStocks(user.id);
+    
+                return res.status(200).json({
+                    message: "You guessed wrong, but your spring saved you! Toss again!",
+                    coinResult,
+                    score: game.score,
+                    inventory,
+                });
+            }
+    
+            // If guess is incorrect and no spring is used
+            game.status = "finished";
+            await gameDAO.updateGame(game);
+    
+            if (items?.lead?.quantity) {
+                const userStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
+                if (userStock) {
+                    userStock.quantity -= items?.lead?.quantity;
+                    await stockDAO.updateStock(userStock);
+                }
+            }
+            if (items?.heavyLead?.quantity) {
+                const userStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
+                if (userStock) {
+                    userStock.quantity -= items?.heavyLead?.quantity;
+                    await stockDAO.updateStock(userStock);
+                }
+            }
+    
+            const rewards = await ItemController.getRewards(game);
+    
+            return res.status(200).json({
+                message: "You guessed wrong! Game over.",
+                coinResult,
+                finalScore: game.score,
+                rewards,
+            });
+        } catch (error: Error | any) {
+            return res.status(400).json({ error: error.message });
+        }
     }
 
 }

@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.use(authMiddleware as any); //TODO : add admin middleware
 router.post('/create', ItemController.createItem as any);
+router.get('/inventory', ItemController.getUserInventory as any);
+
 
 
 

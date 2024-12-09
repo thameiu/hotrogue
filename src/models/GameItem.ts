@@ -1,4 +1,4 @@
-export class GameId {
+export class GameItem {
     constructor(
         public item: string,
         public game: number,

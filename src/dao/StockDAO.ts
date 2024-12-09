@@ -10,14 +10,6 @@ export class StockDAO {
         );
     }
 
-    async getStock(item: number, user: number): Promise<Stock | null> {
-        const row = await this.db.get(
-        'SELECT * FROM Stock WHERE item = ? AND user = ?',
-        [item, user]
-        );
-        return row ? new Stock(row.item, row.user, row.quantity) : null;
-    }
-
     async getStockByUserAndItem(userId: number, itemId: string): Promise<Stock | null> {
         const row = await this.db.get(
             "SELECT * FROM Stock WHERE user = ? AND item = ?",
@@ -31,6 +23,14 @@ export class StockDAO {
             "UPDATE Stock SET quantity = ? WHERE user = ? AND item = ?",
             [stock.quantity, stock.user, stock.item]
         );
+    }
+
+    async getAllStocksByUser(userId: number): Promise<Stock[]> {
+        const rows = await this.db.all(
+            "SELECT * FROM Stock WHERE user = ?",
+            [userId]
+        );
+        return rows.map((row: any) => new Stock(row.item, row.user, row.quantity));
     }
     
 }

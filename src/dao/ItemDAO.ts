@@ -19,7 +19,7 @@ export class ItemDAO {
 
     async getItems(): Promise<Item[] | null> {
         const rows = await this.db.all('SELECT * FROM Items');
-        console.log(rows);
+        // console.log(rows);
         return rows.map((row: any) => new Item(row.itemId, row.name, row.description, row.rarity, row.maxQuantity));
     }
 }
