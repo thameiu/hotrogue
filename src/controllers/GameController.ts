@@ -44,7 +44,7 @@ export class GameController {
 
             return res.status(201).json({
                 message: "Game started succesfully ! Toss a coin !",
-                gameId: newGame.gameId,
+                user: user.username
             });
         } catch (error: Error | any) {
             if (error instanceof Error) {
@@ -106,15 +106,15 @@ export class GameController {
         let baseProbability = 0.5;
     
         if (leadSide === "heads") {
-            baseProbability += 0.05;
+            baseProbability -= 0.07;
         } else if (leadSide === "tails") {
-            baseProbability -= 0.05;
+            baseProbability += 0.07;
         }
     
         if (heavyLeadSide === "heads") {
-            baseProbability += 0.12;
+            baseProbability -= 0.16;
         } else if (heavyLeadSide === "tails") {
-            baseProbability -= 0.12;
+            baseProbability += 0.16;
         }
     
         baseProbability = Math.min(Math.max(baseProbability, 0), 1);
@@ -146,6 +146,21 @@ export class GameController {
     
             const items = req.body.items;
     
+            if (items?.genieCoin){
+                if (items?.miteCoin || items?.cheaterCoin) {
+                    return res.status(400).json({ error: "You can only use one special coin at a time." });
+                }
+                return GameController.genieCoinToss(req,res,user,game,gameDAO,stockDAO,gameItemDAO,guess);
+            }
+
+            if (items?.cheaterCoin){
+                if (items?.miteCoin || items?.genieCoin) {
+                    return res.status(400).json({ error: "You can only use one special coin at a time." });
+                }
+                return GameController.cheaterCoinToss(req,res,user,game,gameDAO,stockDAO,gameItemDAO,guess);
+            }
+
+
             const totalLeads = (items?.lead?.quantity || 0) + (items?.heavyLead?.quantity || 0) * 2;
     
             if (totalLeads > 5) {
@@ -172,6 +187,7 @@ export class GameController {
                 }
                 if (!existingSpring) {
                     const newSpringGameItem = new GameItem("spring", game.gameId, 0);
+                    console.log(newSpringGameItem);
                     await gameItemDAO.createGameItem(newSpringGameItem);
                 }
             }
@@ -214,14 +230,16 @@ export class GameController {
             }
         }
 
-        const rewards = await ItemController.getRewards(game);
+        const rewards = await ItemController.getRoundReward(game);
+        const ennemy = await ItemController.spawnEnnemy(game);
         const inventory = await ItemController.getUserStocks(user.id);
 
         return res.status(200).json({
             message: "You guessed correctly! Toss again!",
             coinResult,
             score: game.score,
-            rewards,
+            rewards:rewards?rewards:'no rewards',
+            ...(ennemy && { ennemy }),
             inventory,
         });
     }
@@ -235,12 +253,14 @@ export class GameController {
             await gameItemDAO.updateGameItem(existingSpring);
         }
 
+        const rewards = await ItemController.getRoundReward(game);
         const inventory = await ItemController.getUserStocks(user.id);
 
         return res.status(200).json({
             message: "You guessed wrong, but your spring saved you! Toss again!",
             coinResult,
             score: game.score,
+            rewards,
             inventory,
         });
     }
@@ -267,11 +287,111 @@ export class GameController {
 
         const rewards = await ItemController.getRewards(game);
 
+        const leadMiteStock = await stockDAO.getStockByUserAndItem(user.id, "leadmite");
+        if (leadMiteStock) {
+            leadMiteStock.quantity = 0;
+            await stockDAO.updateStock(leadMiteStock);
+        }
+
+        const heavyLeadMiteStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLeadmite");
+        if (heavyLeadMiteStock) {
+            heavyLeadMiteStock.quantity = 0;
+            await stockDAO.updateStock(heavyLeadMiteStock);
+        }
+
+        const leadMiteQueenStock = await stockDAO.getStockByUserAndItem(user.id, "leadmiteQueen");
+        if (leadMiteQueenStock) {
+            leadMiteQueenStock.quantity = 0;
+            await stockDAO.updateStock(leadMiteQueenStock);
+        }
+
+        const usedItems = await gameItemDAO.getAllGameItemsByGame(game.gameId);
         return res.status(200).json({
             message: "You guessed wrong! Game over.",
             coinResult,
             finalScore: game.score,
-            rewards,
+            rewards:rewards?rewards:'no rewards',
+            usedItems:usedItems?usedItems:'no used items',
         });
     }
+
+    static async genieCoinToss(req:Request,res:Response,user:User,game:Game,gameDAO:GameDAO,stockDAO:StockDAO,gameItemDAO:GameItemDAO,guess:string):Promise<Response>{
+        const usedGenieCoin = await gameItemDAO.getGameItemByGameAndItem(game.gameId, "genieCoin");
+        const userGenieCoinStock = await stockDAO.getStockByUserAndItem(user.id, "genieCoin");
+
+        if (!userGenieCoinStock || userGenieCoinStock.quantity < 1) {
+            return res.status(400).json({ error: "You don't have any genie coins in your inventory." });
+        }
+        userGenieCoinStock.quantity -= 1;
+        await stockDAO.updateStock(userGenieCoinStock);
+
+        if (usedGenieCoin) {
+            usedGenieCoin.quantity += 1;
+            await gameItemDAO.updateGameItem(usedGenieCoin);
+        } else {
+            const newGenieCoinGameItem = new GameItem("genieCoin", game.gameId, 1);
+            await gameItemDAO.createGameItem(newGenieCoinGameItem);
+        }
+        
+        const coinResult = Math.random() < 0.5 ? "heads" : "tails";
+
+        if (guess === coinResult) {
+            game.score *= 2;
+        } else {
+            game.score = Math.floor(game.score / 2);
+        }
+
+        await gameDAO.updateGame(game);
+
+        const rewards = await ItemController.getRoundReward(game);
+        const inventory = await ItemController.getUserStocks(user.id);
+
+        return res.status(200).json({
+            message: guess === coinResult ? "You guessed correctly! Score doubled!" : "You guessed wrong! Score halved!",
+            coinResult,
+            score: game.score,
+            rewards:rewards?rewards:'no rewards',
+            inventory,
+        });
+    }
+
+    static async cheaterCoinToss(req:Request,res:Response,user:User,game:Game,gameDAO:GameDAO,stockDAO:StockDAO,gameItemDAO:GameItemDAO,guess:string):Promise<Response>{
+        const usedCheaterCoin = await gameItemDAO.getGameItemByGameAndItem(game.gameId, "cheaterCoin");
+        const userCheaterCoinStock = await stockDAO.getStockByUserAndItem(user.id, "cheaterCoin");
+
+        if (!userCheaterCoinStock || userCheaterCoinStock.quantity < 1) {
+            return res.status(400).json({ error: "You don't have any cheater coins in your inventory." });
+        }
+
+        userCheaterCoinStock.quantity -= 1;
+        await stockDAO.updateStock(userCheaterCoinStock);
+
+        if (usedCheaterCoin) {
+            usedCheaterCoin.quantity += 1;
+            await gameItemDAO.updateGameItem(usedCheaterCoin);
+        } else {
+            const newCheaterCoinGameItem = new GameItem("cheaterCoin", game.gameId, 1);
+            await gameItemDAO.createGameItem(newCheaterCoinGameItem);
+        }
+
+        const coinResult = Math.random() < 0.9 ? guess : (guess === "heads" ? "tails" : "heads");
+        
+        if (guess === coinResult) {
+            game.score += 2;
+        } else {
+            game.score = game.score >= 10 ? game.score - 10 : 0;
+        }
+
+        await gameDAO.updateGame(game);
+
+        const inventory = await ItemController.getUserStocks(user.id);
+
+        return res.status(200).json({
+            message: guess === coinResult ? "You guessed correctly! 2 points!" : "You guessed wrong! -10 points!",
+            coinResult,
+            score: game.score,
+            inventory,
+        });
+    }
+
 }

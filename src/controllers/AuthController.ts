@@ -90,7 +90,7 @@ export class AuthController {
 
 
 function generateAccessToken(userId: number): string {
-    return jwt.sign({ userId }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+    return jwt.sign({ userId }, ACCESS_TOKEN_SECRET, { expiresIn: '5d' });
 }
 
 function generateRefreshToken(userId: number): { token: string; expiresAt: Date } {

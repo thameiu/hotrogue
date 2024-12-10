@@ -19,11 +19,22 @@ export class StockDAO {
     }
 
     async updateStock(stock: Stock): Promise<void> {
+        if (stock.quantity <= 0) {
+            return this.deleteStock(stock);
+        }
         await this.db.run(
             "UPDATE Stock SET quantity = ? WHERE user = ? AND item = ?",
             [stock.quantity, stock.user, stock.item]
         );
     }
+
+    async deleteStock(stock: Stock): Promise<void> {
+        await this.db.run(
+            "DELETE FROM Stock WHERE user = ? AND item = ?",
+            [stock.user, stock.item]
+        );
+    }
+
 
     async getAllStocksByUser(userId: number): Promise<Stock[]> {
         const rows = await this.db.all(
