@@ -6,7 +6,6 @@ import { initDB } from '../db/db';
 import { User } from '../models/User';
 import { LoginDto } from '../dto/user/login.dto';
 import { RegisterDto } from '../dto/user/register.dto';
-import { UserController } from './UserController';
 
 const ACCESS_TOKEN_SECRET = 'abc';
 const REFRESH_TOKEN_SECRET = 'abc';
@@ -83,7 +82,8 @@ export class AuthController {
 
 
     static async refreshToken(req: Request, res: Response) {
-        const { refreshToken } = req.body;
+        const  refreshToken  = req.body.token;
+        console.log(req);
 
         if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
 
@@ -106,38 +106,35 @@ export class AuthController {
         const authHeader = req.headers.authorization;
     
         if (!authHeader) {
-          return null; // No token provided
+          return null;
         }
     
         const token = authHeader;
     
         try {
-          // Decode the token
             const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as { userId: number };
 
-            // Access the database
             const db = await initDB();
             const userDAO = new UserDAO(db);
 
-            // Find the user by ID
             const user = await userDAO.getUserById(decoded.userId);
 
-            return user || null; // Return the user if found, otherwise null
+            return user || null; 
         } catch (error) {
             console.error('Token verification failed:', error);
-            return null; // Invalid token
+            return null; 
         }
     }
 }
 
 
 function generateAccessToken(userId: number): string {
-    return jwt.sign({ userId }, ACCESS_TOKEN_SECRET, { expiresIn: '5d' });
+    return jwt.sign({ userId }, ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
 }
 
 function generateRefreshToken(userId: number): { token: string; expiresAt: Date } {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); 
-    const token = jwt.sign({ userId }, REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId }, REFRESH_TOKEN_SECRET, { expiresIn: '100d' });
     refreshTokenStore.set(userId, { token, expiresAt });
     return { token, expiresAt };
 }

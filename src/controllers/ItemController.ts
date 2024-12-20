@@ -85,6 +85,31 @@ export class ItemController {
             return res.status(500).json({ error: "An unknown error occurred" });
         }
     }
+
+    static async deleteItemById(req: Request, res: Response): Promise<Response> {
+        try {
+            const { itemId } = req.params;
+    
+            if (!itemId) {
+                return res.status(400).json({ message: "Item ID is required" });
+            }
+    
+            const db = await initDB();
+            const itemDAO = new ItemDAO(db);
+    
+            await itemDAO.deleteItemById(itemId);
+    
+            return res.status(200).json({ message: "Item deleted successfully" });
+        } catch (error: Error | any) {
+            if (error instanceof Error) {
+                if (error.message.includes("not found")) {
+                    return res.status(404).json({ error: error.message });
+                }
+                return res.status(500).json({ error: error.message });
+            }
+            return res.status(500).json({ error: "An unknown error occurred" });
+        }
+    }
     
 
     static async getRoundReward(game: Game): Promise<{ name: string; description: string; quantity: number } | null> {
@@ -93,18 +118,16 @@ export class ItemController {
         const items = await itemDAO.getItems();
     
         if (!items || items.length === 0) {
-            return null; // No items available to reward
+            return null; 
         }
-    
-        // Exclude specific items
+        
         const excludedItems = ['leadmite', 'heavyLeadmite', 'leadmiteQueen'];
         const filteredItems = items.filter(item => !excludedItems.includes(item.itemId));
 
         if (filteredItems.length === 0) {
-            return null; // No eligible items to reward
+            return null; 
         }
     
-        // Randomly pick an item
         const shuffledItems = [...filteredItems].sort(() => Math.random() - 0.5);
         const selectedItem = shuffledItems.find((item) => {
             const rarity = Math.floor(Math.random() * 100);
@@ -112,13 +135,12 @@ export class ItemController {
         });
     
         if (!selectedItem) {
-            return null; // No item matched rarity conditions
+            return null; 
         }
     
         const stockDAO = new StockDAO(db);
         const existingStock = await stockDAO.getStockByUserAndItem(game.user, selectedItem.itemId);
     
-        // Calculate dropQuantity based on rarity
         let dropQuantity = 1;
         for (let i = 1; i < selectedItem.maxQuantity; i++) {
             const randomChance = Math.floor(Math.random() * 100);
@@ -174,7 +196,6 @@ export class ItemController {
         const stockDAO = new StockDAO(db);
         const existingStock = await stockDAO.getStockByUserAndItem(game.user, selectedEnnemy.itemId);
     
-        // Calculate dropQuantity based on rarity
         let dropQuantity = 1;
         for (let i = 1; i < selectedEnnemy.maxQuantity; i++) {
             const randomChance = Math.floor(Math.random() * 100);
@@ -207,7 +228,6 @@ export class ItemController {
         const rewards: Item[] = [];
         const itemCountMap: Record<string, number> = {};
     
-        // List of excluded items
         const excludedItems = ['leadmite', 'heavyLeadmite', 'leadmiteQueen'];
     
         if (items && items.length > 0) {
@@ -215,7 +235,6 @@ export class ItemController {
                 const shuffledItems = [...items].sort(() => Math.random() - 0.5);
     
                 for (const item of shuffledItems) {
-                    // Skip excluded items
                     if (excludedItems.includes(item.itemId)) {
                         continue;
                     }
@@ -281,9 +300,8 @@ export class ItemController {
             
             const stocks = await stockDAO.getAllStocksByUser(userId);
     
-            // Format the stocks
             const formattedStocks = await Promise.all(stocks.map(async (stock) => ({
-                item: await ItemController.formatItemName(stock.item), // Map or format the name
+                item: await ItemController.formatItemName(stock.item), 
                 quantity: stock.quantity,
             })));
             return formattedStocks;
@@ -338,7 +356,6 @@ export class ItemController {
             }
         }
 
-    // Utility function to format item names if they aren't in the map
     static async formatItemName(itemId: string): Promise<string> {
         const db = await initDB();
         const itemDAO = new ItemDAO(db);

@@ -21,4 +21,15 @@ export class ItemDAO {
         const rows = await this.db.all('SELECT * FROM Items');
         return rows.map((row: any) => new Item(row.itemId, row.name, row.description, row.rarity, row.maxQuantity));
     }
+
+    async deleteItemById(itemId: string): Promise<void> {
+        const result = await this.db.run('DELETE FROM Items WHERE itemId = ?', [itemId]);
+    
+        if (result.changes === 0) {
+            throw new Error(`Item ${itemId} not found.`);
+        }
+    }
+    
+
+
 }

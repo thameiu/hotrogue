@@ -50,7 +50,7 @@ router.post('', adminMiddleware as any,ItemController.createItem as any);
 
 /**
  * @swagger
- * /item/{itemId}:
+ * /item/id/{itemId}:
  *   get:
  *     summary: Get item details by ID
  *     tags:
@@ -96,7 +96,58 @@ router.post('', adminMiddleware as any,ItemController.createItem as any);
  *         description: Internal server error
  */
 
-router.get('/:itemId', ItemController.getItemById as any);
+router.get('/id/:itemId', ItemController.getItemById as any);
+
+
+
+/**
+ * @swagger
+ * /item/id/{itemId}:
+ *   delete:
+ *     summary: Delete item by ID
+ *     tags:
+ *       - Item
+ *     parameters:
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the item to delete
+ *     responses:
+ *       200:
+ *         description: Successfully deleted item
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 item:
+ *                   type: object
+ *                   properties:
+ *                     itemId:
+ *                       type: string
+ *                       description: Unique identifier for the item
+ *                     name:
+ *                       type: string
+ *                       description: Name of the item
+ *                     description:
+ *                       type: string
+ *                       description: Description of the item
+ *                     rarity:
+ *                       type: number
+ *                       description: Rarity level of the item
+ *                     maxQuantity:
+ *                       type: number
+ *                       description: Maximum quantity of the item
+ *       400:
+ *         description: Bad request, possibly due to missing or invalid item ID
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal server error
+ */
+router.delete('/id/:itemId', adminMiddleware as any, ItemController.deleteItemById as any);
 
 
 /**

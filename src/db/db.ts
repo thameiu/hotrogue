@@ -38,7 +38,7 @@ export async function initDB() {
       user INTEGER NOT NULL,
       quantity INTEGER NOT NULL,
       PRIMARY KEY (item, user),
-      FOREIGN KEY(item) REFERENCES Items(itemId),
+      FOREIGN KEY(item) REFERENCES Items(itemId) ON DELETE CASCADE,
       FOREIGN KEY(user) REFERENCES Users(id)
     );
     
@@ -47,8 +47,8 @@ export async function initDB() {
       game INTEGER NOT NULL,
       quantity INTEGER NOT NULL,
       PRIMARY KEY (item, game),
-      FOREIGN KEY(item) REFERENCES Items(itemId),
-      FOREIGN KEY(game) REFERENCES Games(gameId)
+      FOREIGN KEY(item) REFERENCES Items(itemId) ON DELETE CASCADE,
+      FOREIGN KEY(game) REFERENCES Games(gameId) ON DELETE CASCADE
     );
   `);
 
