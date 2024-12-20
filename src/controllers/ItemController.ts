@@ -9,13 +9,17 @@ import { Stock } from "../models/Stock";
 import { AuthController } from "./AuthController";
 import { GameItemDAO } from "../dao/GameItemDAO";
 import { GameItem } from "../models/GameItem";
+import { Responses } from "swagger-jsdoc";
 
 export class ItemController {
 
     static async createItem(req: Request, res: Response): Promise<Response> {
-        try {
 
+        try {
             const createItemDto = CreateItemDto.fromRequest(req.body);
+            if (createItemDto instanceof Error) {
+                return res.status(400).json({ message: createItemDto.message });
+            }
 
             const newItem = new Item(
                 createItemDto.itemId,
@@ -42,9 +46,46 @@ export class ItemController {
         }
     }
 
-    static async getItemById(itemId: string): Promise<any | null> {
-        // return await this.itemDAO.getItemById(itemId);
+    static async getItems(req: Request, res: Response): Promise<Response> {
+        try {
+            const db = await initDB();
+            const itemDAO = new ItemDAO(db);
+            const items = await itemDAO.getItems();
+            return res.status(200).json({ items });
+        } catch (error: Error | any) {
+            if (error instanceof Error) {
+                return res.status(500).json({ error: error.message });
+            }
+            return res.status(500).json({ error: "An unknown error occurred" });
+        }
     }
+
+    static async getItemById(req: Request, res: Response): Promise<Response> {
+        try {
+            const { itemId } = req.params; 
+            
+            if (!itemId) {
+                return res.status(400).json({ message: "Item ID is required" });
+            }
+    
+            const db = await initDB(); 
+            const itemDAO = new ItemDAO(db);
+    
+            const item = await itemDAO.getItemById(itemId);
+    
+            if (!item) {
+                return res.status(404).json({ message: "Item not found" }); 
+            }
+    
+            return res.status(200).json({ item }); 
+        } catch (error: Error | any) {
+            if (error instanceof Error) {
+                return res.status(500).json({ error: error.message });
+            }
+            return res.status(500).json({ error: "An unknown error occurred" });
+        }
+    }
+    
 
     static async getRoundReward(game: Game): Promise<{ name: string; description: string; quantity: number } | null> {
         const db = await initDB();

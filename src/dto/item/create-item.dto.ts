@@ -7,9 +7,9 @@ export class CreateItemDto {
         public maxQuantity: number,
     ) {}
 
-    static fromRequest(body: any): CreateItemDto {
+    static fromRequest(body: any): CreateItemDto | Error {
         if (!body.itemId || !body.name || !body.description || !body.rarity || !body.maxQuantity) {
-            throw new Error("Invalid data: iteùId, name, description, rarity and maxQuantity are required");
+            return Error("Invalid data: iteùId, name, description, rarity and maxQuantity are required");
         }
         return new CreateItemDto(body.itemId, body.name, body.description, body.rarity, body.maxQuantity);
     }

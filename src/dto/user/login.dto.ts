@@ -4,9 +4,10 @@ export class LoginDto {
         public password: string
     ) {}
 
-    static fromRequest(body: any): LoginDto {
+    static fromRequest(body: any): LoginDto | Error {
         if (!body.email || !body.password) {
-            throw new Error("Invalid data: email and password are required.");
+
+            return Error("Invalid data: email and password are required.");
         }
         return new LoginDto(body.email, body.password);
     }

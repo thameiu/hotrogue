@@ -9,9 +9,15 @@ export class UserController {
     private static nextId = 1;
 
     static async createUser(req: Request, res: Response): Promise<Response> {
+
         try {
+
             const createUserDto = CreateUserDto.fromRequest(req.body);
-    
+
+            if (createUserDto instanceof Error) {
+                return res.status(400).json({ message: createUserDto.message });
+            }
+
             const db = await initDB();
             const userDAO = new UserDAO(db);
     

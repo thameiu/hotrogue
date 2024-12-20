@@ -4,6 +4,9 @@ import jwt from 'jsonwebtoken';
 import { UserDAO } from '../dao/UserDAO';
 import { initDB } from '../db/db';
 import { User } from '../models/User';
+import { LoginDto } from '../dto/user/login.dto';
+import { RegisterDto } from '../dto/user/register.dto';
+import { UserController } from './UserController';
 
 const ACCESS_TOKEN_SECRET = 'abc';
 const REFRESH_TOKEN_SECRET = 'abc';
@@ -14,31 +17,70 @@ const refreshTokenStore = new Map<number, { token: string; expiresAt: Date }>();
 export class AuthController {
 
     static async login(req: Request, res: Response) {
-        const { email, password } = req.body;
 
         try {
-        const db = await initDB();
-        const userDAO = new UserDAO(db);
-  
-        const user = await userDAO.getUserByMail(email); 
-        if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+            const dto = LoginDto.fromRequest(req.body);
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' });
+            if (dto instanceof Error) {
+                return res.status(400).json({ message: dto.message});
+            }
+            
+            const db = await initDB();
+            const userDAO = new UserDAO(db);
+    
+            const user = await userDAO.getUserByMail(dto.email); 
+            if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
-        const accessToken = generateAccessToken(user.id);
-        const refreshToken = generateRefreshToken(user.id);
+            const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+            if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' });
 
-        res.status(200).json({
-            message: 'Login successful',
-            accessToken,
-            refreshToken: refreshToken.token,
-        });
+            const accessToken = generateAccessToken(user.id);
+            const refreshToken = generateRefreshToken(user.id);
+
+            res.status(200).json({
+                message: 'Login successful',
+                accessToken,
+                refreshToken: refreshToken.token,
+            });
         } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+            console.error(error);
+            res.status(500).json({ message: 'Internal server error' });
         }
     }
+
+    static async register(req: Request, res: Response) {
+
+        try {
+            const dto = RegisterDto.fromRequest(req.body);
+
+            if (dto instanceof Error) {
+                return res.status(400).json({ message: dto.message});
+            }
+    
+            const db = await initDB();
+            const userDAO = new UserDAO(db);
+            const existingUser = await userDAO.getUserByMail(dto.email);
+            if (existingUser) {
+                return res.status(409).json({ message: 'Email already taken' });
+            }
+            const hashedPassword = await bcrypt.hash(dto.password, 10);
+            const newUser = new User(0, dto.email, dto.username, hashedPassword, false);
+            await userDAO.createUser(newUser);
+            return res.status(201).json({
+                message: "Account created successfully",
+                user: { 
+                    email: newUser.email, 
+                    username: newUser.username 
+                },
+            });
+        } catch (error: Error | any) {
+            if (error instanceof Error) {
+                return res.status(400).json({ error: error.message });
+            }
+            return res.status(400).json({ error: "An unknown error occurred" });
+        }
+    }
+
 
     static async refreshToken(req: Request, res: Response) {
         const { refreshToken } = req.body;

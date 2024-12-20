@@ -4,8 +4,6 @@ import { initDB } from '../db/db';
 import { UserDAO } from '../dao/UserDAO';
 import { AuthController } from '../controllers/AuthController';
 
-const ACCESS_TOKEN_SECRET = 'your_access_token_secret';
-
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
