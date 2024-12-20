@@ -7,8 +7,8 @@ import { User } from '../models/User';
 import { LoginDto } from '../dto/user/login.dto';
 import { RegisterDto } from '../dto/user/register.dto';
 
-const ACCESS_TOKEN_SECRET = 'abc';
-const REFRESH_TOKEN_SECRET = 'abc';
+const ACCESS_TOKEN_SECRET = 'jhfjdtghjT65Y656Y8dygvcbdsv:mz;d:c,ek;sjdfkl;ersldfyueiosepàz)eo"azzorubctd"gèzeh7E823B2C EU3NCD?98ZYERDCUYX3NDRC8C 8ZREIYDHC UYEUY uydrdszà"esroçuz-syertyo"erlgmpdlrxudhfdsteg';
+const REFRESH_TOKEN_SECRET = '765Y41¨¨M%X§£¨P^piyqscgukjshef c_orf oz  zd$*zd$z$fidjhy"yu"tdgbz-h-<--(<65678927E823B2C EU3NCD?98ZYERDCUYX3NDRC8C 8ZREIYDHC UYEUY 7N UYF?89 E4O9R°93 ZITTF  OIDEP /% §M IYEF66JZY4 J 968R eff';
 
 const refreshTokenStore = new Map<number, { token: string; expiresAt: Date }>();
 
@@ -83,7 +83,6 @@ export class AuthController {
 
     static async refreshToken(req: Request, res: Response) {
         const  refreshToken  = req.body.token;
-        console.log(req);
 
         if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
 

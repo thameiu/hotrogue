@@ -187,7 +187,6 @@ export class GameController {
                 }
                 if (!existingSpring) {
                     const newSpringGameItem = new GameItem("spring", game.gameId, 0);
-                    console.log(newSpringGameItem);
                     await gameItemDAO.createGameItem(newSpringGameItem);
                 }
             }
