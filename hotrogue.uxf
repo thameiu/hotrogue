@@ -1,4 +1,4 @@
-<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>0</x><y>100</y><w>210</w><h>110</h></coordinates><panel_attributes>User
+<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>20</x><y>130</y><w>210</w><h>110</h></coordinates><panel_attributes>User
 --
 _id_
 email - unique
@@ -6,26 +6,26 @@ username - unique
 password
 ...
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>280</x><y>100</y><w>210</w><h>100</h></coordinates><panel_attributes>Stock
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>300</x><y>130</y><w>210</w><h>100</h></coordinates><panel_attributes>Stock
 --
 item - FK
 inventory - FK
 quantity
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>200</x><y>130</y><w>100</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;80;20</additional_attributes></element><element><id>Relation</id><coordinates><x>480</x><y>130</y><w>90</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;70;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>290</y><w>210</w><h>100</h></coordinates><panel_attributes>Game
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>220</x><y>160</y><w>100</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;80;20</additional_attributes></element><element><id>Relation</id><coordinates><x>500</x><y>160</y><w>90</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;20;70;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>20</x><y>320</y><w>210</w><h>100</h></coordinates><panel_attributes>Game
 --
 _id_
 score
 user - FK
-category - string</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>90</x><y>200</y><w>30</w><h>110</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;10;10;90</additional_attributes></element><element><id>UMLClass</id><coordinates><x>550</x><y>90</y><w>210</w><h>120</h></coordinates><panel_attributes>Item
+category - string</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>110</x><y>230</y><w>30</w><h>110</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;10;10;90</additional_attributes></element><element><id>UMLClass</id><coordinates><x>570</x><y>120</y><w>210</w><h>120</h></coordinates><panel_attributes>Item
 --
 _itemId_
 name - string
 description - string
 rarity - number (%)
-maxQuantity - number</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>290</x><y>290</y><w>210</w><h>100</h></coordinates><panel_attributes>UsedItem
+maxQuantity - number</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>310</x><y>320</y><w>210</w><h>100</h></coordinates><panel_attributes>UsedItem
 --
 _id_
 gameId - FK
 ItemId
-quantity</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>200</x><y>330</y><w>110</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>90;20;10;20</additional_attributes></element><element><id>Relation</id><coordinates><x>490</x><y>200</y><w>200</w><h>170</h></coordinates><panel_attributes></panel_attributes><additional_attributes>180;10;180;150;10;150</additional_attributes></element></diagram>
+quantity</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>220</x><y>360</y><w>110</w><h>40</h></coordinates><panel_attributes></panel_attributes><additional_attributes>90;20;10;20</additional_attributes></element><element><id>Relation</id><coordinates><x>510</x><y>230</y><w>200</w><h>170</h></coordinates><panel_attributes></panel_attributes><additional_attributes>180;10;180;150;10;150</additional_attributes></element></diagram>
