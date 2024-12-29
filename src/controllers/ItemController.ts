@@ -371,13 +371,6 @@ export class ItemController {
             return gameItems;
         }
         
-        static async getGameItemByItem(gameId:number, itemId:string): Promise<GameItem | null>{
-            const db = await initDB();
-            const gameItemDAO = new GameItemDAO(db);
-            const gameItem = await gameItemDAO.getGameItemByGameAndItem(gameId, itemId);
-            return gameItem;
-        }
-
         static async handleLeadmites(
             user: User,
             stockDAO: StockDAO
@@ -394,7 +387,7 @@ export class ItemController {
             if (leadmites > 0) {
                 const leadStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
                 if (leadStock) {
-                    eatenLeads = Math.min(leadmites, leadStock.quantity); 
+                    eatenLeads = Math.min(leadmites, leadStock.quantity);
                     leadStock.quantity -= eatenLeads;
                     await stockDAO.updateStock(leadStock);
                 }
@@ -403,25 +396,45 @@ export class ItemController {
             if (heavyLeadmites > 0) {
                 const heavyLeadStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
                 if (heavyLeadStock) {
-                    eatenHeavyLeads = Math.min(heavyLeadmites, heavyLeadStock.quantity); 
+                    eatenHeavyLeads = Math.min(heavyLeadmites, heavyLeadStock.quantity);
                     heavyLeadStock.quantity -= eatenHeavyLeads;
                     await stockDAO.updateStock(heavyLeadStock);
                 }
             }
         
             let leadmiteMessage = "";
+        
             if (leadmites > 0 || heavyLeadmites > 0) {
-                leadmiteMessage = `(${leadmites} leadmites and ${heavyLeadmites} heavyLeadmites are in your inventory. `;
-                if (eatenLeads > 0 || eatenHeavyLeads > 0) {
-                    leadmiteMessage += `${eatenLeads} lead(s) and ${eatenHeavyLeads} heavyLead(s) have been eaten.)`;
+                const inventoryDetails = [];
+                if (leadmites > 0) {
+                    const verb = leadmites === 1 ? "is" : "are";
+                    inventoryDetails.push(`${leadmites} leadmite${leadmites !== 1 ? "s" : ""} ${verb}`);
+                }
+                if (heavyLeadmites > 0) {
+                    const verb = heavyLeadmites === 1 ? "is" : "are";
+                    inventoryDetails.push(`${heavyLeadmites} heavyLeadmite${heavyLeadmites !== 1 ? "s" : ""} ${verb}`);
+                }
+        
+                leadmiteMessage = `(${inventoryDetails.join(" and ")} in your inventory.`;
+        
+                const eatenDetails = [];
+                if (eatenLeads > 0) {
+                    eatenDetails.push(`${eatenLeads} lead${eatenLeads !== 1 ? "s" : ""}`);
+                }
+                if (eatenHeavyLeads > 0) {
+                    eatenDetails.push(`${eatenHeavyLeads} heavy lead${eatenHeavyLeads !== 1 ? "s" : ""}`);
+                }
+        
+                if (eatenDetails.length > 0) {
+                    const verb = eatenDetails.length === 1 ? "has been" : "have been";
+                    leadmiteMessage += ` ${eatenDetails.join(" and ")} ${verb} eaten.)`;
                 } else {
-                    leadmiteMessage += "No leads or heavy leads were eaten this round.)";
+                    leadmiteMessage += " No leads or heavy leads were eaten this round.)";
                 }
             }
         
             return leadmiteMessage;
         }
-        
     
 }
     

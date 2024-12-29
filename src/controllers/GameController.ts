@@ -53,34 +53,13 @@ export class GameController {
             return res.status(400).json({ error: "An unknown error occurred" });
         }
     }
-
-    // static async getOngoingGame(req:Request,res:Response): Promise<Game|null> {
-    //     try {
-          
-
-    //         const db = await initDB();
-    //         const gameDAO = new GameDAO(db);
-      
-    //         const game = await gameDAO.getOngoingGame(userId);
-                
-    //         return game;
-    //     } catch (error: Error | any) {
-    //         if (error instanceof Error) {
-    //             return res.status(400).json({ error: error.message });
-    //         }
-    //         return res.status(400).json({ error: "An unknown error occurred" });
-    //     }
-    // }
-
     
-    
-    static async calculateWeight(
+    static async checkQuantity(
         itemName: string,
         itemData: { quantity: number; side: string } | undefined,
         user: User,
         stockDAO: StockDAO,
-        weightPerItem: number
-    ): Promise<number> {
+    ) {
         if (!itemData || itemData.quantity <= 0) return 0;
     
         const userStock = await stockDAO.getStockByUserAndItem(user.id, itemName);
@@ -94,52 +73,50 @@ export class GameController {
             throw new Error(`Invalid side for ${itemName}. Must be 'heads' or 'tails'.`);
         }
     
-        return itemData.quantity * weightPerItem;
+        return 0;
     }
     
-    static getWeightedResult(
+    static async getWeightedResult(
         guess: string,
-        leadSide: string | undefined,
-        heavyLeadSide: string | undefined,
-        leadmiteSide: string | undefined,
-        heavyLeadmiteSide: string | undefined,
-        leadmiteQueenSide: string | undefined,
-    ): string {
+        stockDAO: StockDAO,
+        user: User,
+        lead: { quantity: number; side: string } | undefined,
+        heavyLead: { quantity: number; side: string } | undefined,
+        leadmite: { quantity: number; side: string } | undefined,
+        heavyLeadmite: { quantity: number; side: string } | undefined,
+        leadmiteQueen: { quantity: number; side: string } | undefined,
+    ): Promise<string> {
+
+
         let baseProbability = 0.5;
     
-        if (leadSide === "heads") {
-            baseProbability -= 0.07;
-        } else if (leadSide === "tails") {
-            baseProbability += 0.07;
+        if (lead?.side === "heads") {
+            baseProbability -= 0.07*lead?.quantity;
+        } else if (lead?.side === "tails") {
+            baseProbability += 0.07*lead?.quantity;
         }
     
-        if (heavyLeadSide === "heads") {
-            baseProbability -= 0.16;
-        } else if (heavyLeadSide === "tails") {
-            baseProbability += 0.16;
+        if (heavyLead?.side === "heads") {
+            baseProbability -= 0.16*heavyLead?.quantity;
+        } else if (heavyLead?.side === "tails") {
+            baseProbability += 0.16*heavyLead?.quantity;
         }
 
-        if (leadmiteSide === "heads") {
-            baseProbability -= 0.04;
-        } else if (leadmiteSide === "tails") {
-            baseProbability += 0.04;
+        if (leadmite?.side === "heads") {
+            baseProbability -= 0.04*leadmite?.quantity;
+        } else if (leadmite?.side === "tails") {
+            baseProbability += 0.04*leadmite?.quantity;
         }
 
-        if (heavyLeadmiteSide === "heads") {
-            baseProbability -= 0.10;
-        } else if (heavyLeadmiteSide === "tails") {
-            baseProbability += 0.10;
+        if (heavyLeadmite?.side === "heads") {
+            baseProbability -= 0.10*heavyLeadmite?.quantity;
+        } else if (heavyLeadmite?.side === "tails") {
+            baseProbability += 0.10*heavyLeadmite?.quantity;
         }
-    
         baseProbability = Math.min(Math.max(baseProbability, 0), 1);
-    
+        console.log(baseProbability);
         return Math.random() < baseProbability ? "heads" : "tails";
     }
-
-    static async calculateLeadmite(){
-
-    }
-
 
     static async tossCoin(req: Request, res: Response): Promise<Response> {
         try {
@@ -178,6 +155,11 @@ export class GameController {
                 return GameController.cheaterCoinToss(req,res,user,game,gameDAO,stockDAO,gameItemDAO,guess);
             }
 
+            await GameController.checkQuantity('lead', items?.lead, user, stockDAO);
+            await GameController.checkQuantity('heavyLead', items?.heavyLead, user, stockDAO);
+            await GameController.checkQuantity('leadmite', items?.leadmite, user, stockDAO);
+            await GameController.checkQuantity('heavyLeadmite', items?.heavyLeadmite, user, stockDAO);
+            await GameController.checkQuantity('leadmiteQueen', items?.leadmiteQueen, user, stockDAO);
 
             const totalLeads = (items?.lead?.quantity || 0) + (items?.heavyLead?.quantity || 0) * 2;
     
@@ -191,7 +173,7 @@ export class GameController {
             ) {
                     return res.status(400).json({ error: "You can't place leadmites on the same side as leads." });
                 }
-            const coinResult = GameController.getWeightedResult(guess, items?.lead?.side, items?.heavyLead?.side, items?.leadmite?.side, items?.heavyLeadmite?.side, items?.leadmiteQueen?.side);
+            const coinResult = await GameController.getWeightedResult(guess, stockDAO, user, items?.lead, items?.heavyLead, items?.leadmite, items?.heavyLeadmite, items?.leadmiteQueen);
     
             
             const existingSpring = await gameItemDAO.getGameItemByGameAndItem(game.gameId, "spring");
@@ -266,7 +248,7 @@ export class GameController {
                 userStock.quantity -= eliminatedLeadmites;
                 game.score += eliminatedLeadmites * 2; 
                 await stockDAO.updateStock(userStock);
-                ennemyInfo += `You got rid of ${eliminatedLeadmites} leadmite(s)! `;
+                ennemyInfo += `You got rid of ${eliminatedLeadmites} leadmite${eliminatedLeadmites>1?'s':''}! `;
             }
         }
 
@@ -281,7 +263,6 @@ export class GameController {
             }
         }
     
-        // Handle leadmite consumption
         const leadmiteMessage = await ItemController.handleLeadmites(user, stockDAO);
     
         const rewards = await ItemController.getRoundReward(game);
@@ -308,14 +289,19 @@ export class GameController {
             await gameItemDAO.updateGameItem(existingSpring);
         }
 
+        
+        const leadmiteMessage = await ItemController.handleLeadmites(user, stockDAO);
+
         const rewards = await ItemController.getRoundReward(game);
+        const ennemy = await ItemController.spawnEnnemy(game);
         const inventory = await ItemController.getUserStocks(user.id);
 
         return res.status(200).json({
-            message: "You guessed wrong, but your spring saved you! Toss again!",
+            message: "You guessed wrong, but your spring saved you! Toss again! "+leadmiteMessage,
             coinResult,
             score: game.score,
             rewards,
+            ...(ennemy && { ennemy }),
             inventory,
         });
     }
