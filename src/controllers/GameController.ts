@@ -99,9 +99,11 @@ export class GameController {
     
     static getWeightedResult(
         guess: string,
-        totalWeight: number,
         leadSide: string | undefined,
-        heavyLeadSide: string | undefined
+        heavyLeadSide: string | undefined,
+        leadmiteSide: string | undefined,
+        heavyLeadmiteSide: string | undefined,
+        leadmiteQueenSide: string | undefined,
     ): string {
         let baseProbability = 0.5;
     
@@ -116,10 +118,26 @@ export class GameController {
         } else if (heavyLeadSide === "tails") {
             baseProbability += 0.16;
         }
+
+        if (leadmiteSide === "heads") {
+            baseProbability -= 0.04;
+        } else if (leadmiteSide === "tails") {
+            baseProbability += 0.04;
+        }
+
+        if (heavyLeadmiteSide === "heads") {
+            baseProbability -= 0.10;
+        } else if (heavyLeadmiteSide === "tails") {
+            baseProbability += 0.10;
+        }
     
         baseProbability = Math.min(Math.max(baseProbability, 0), 1);
     
         return Math.random() < baseProbability ? "heads" : "tails";
+    }
+
+    static async calculateLeadmite(){
+
     }
 
 
@@ -166,13 +184,14 @@ export class GameController {
             if (totalLeads > 5) {
                 return res.status(400).json({ error: "You can only use up to 5 leads in total (including heavyLeads)" });
             }
-    
-            const leadWeight = await GameController.calculateWeight("lead", items?.lead, user, stockDAO, 0.05);
-            const heavyLeadWeight = await GameController.calculateWeight("heavyLead", items?.heavyLead, user, stockDAO, 0.10);
-    
-            const totalWeight = leadWeight + heavyLeadWeight;
-    
-            const coinResult = GameController.getWeightedResult(guess, totalWeight, items?.lead?.side, items?.heavyLead?.side);
+
+            if ((items?.lead?.side === items?.leadmite?.side || items?.heavyLead?.side === items?.heavyLeadmite?.side || 
+                items?.heavyLead?.side === items?.leadmite?.side || items?.lead?.side === items?.heavyLeadmite?.side)
+                && ((items?.lead?.quantity || items?.heavyLead?.quantity) > 0 && (items?.leadmite?.quantity || items?.heavyLeadmite?.quantity) > 0)
+            ) {
+                    return res.status(400).json({ error: "You can't place leadmites on the same side as leads." });
+                }
+            const coinResult = GameController.getWeightedResult(guess, items?.lead?.side, items?.heavyLead?.side, items?.leadmite?.side, items?.heavyLeadmite?.side, items?.leadmiteQueen?.side);
     
             
             const existingSpring = await gameItemDAO.getGameItemByGameAndItem(game.gameId, "spring");
@@ -208,12 +227,21 @@ export class GameController {
             return res.status(400).json({ error: error.message });
         }
     }
+        
 
-    static async correctGuess(req:Request,res:Response,user:User,game:Game,gameDAO:GameDAO,stockDAO:StockDAO,coinResult:string):Promise<Response>{
+    static async correctGuess(
+        req: Request,
+        res: Response,
+        user: User,
+        game: Game,
+        gameDAO: GameDAO,
+        stockDAO: StockDAO,
+        coinResult: string
+    ): Promise<Response> {
         game.score += 1;
         await gameDAO.updateGame(game);
         const items = req.body.items;
-        
+    
         if (items?.lead?.quantity) {
             const userStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
             if (userStock) {
@@ -228,20 +256,48 @@ export class GameController {
                 await stockDAO.updateStock(userStock);
             }
         }
+    
+        let ennemyInfo = "";
+    
+        if (items?.leadmite?.quantity && items?.leadmite?.quantity >= 1) {
+            const userStock = await stockDAO.getStockByUserAndItem(user.id, "leadmite");
+            if (userStock) {
+                const eliminatedLeadmites = Math.min(userStock.quantity, items.leadmite.quantity);
+                userStock.quantity -= eliminatedLeadmites;
+                game.score += eliminatedLeadmites * 2; 
+                await stockDAO.updateStock(userStock);
+                ennemyInfo += `You got rid of ${eliminatedLeadmites} leadmite(s)! `;
+            }
+        }
 
+        if (items?.heavyLeadmite?.quantity && items?.heavyLeadmite?.quantity >= 1) {
+            const userStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLeadmite");
+            if (userStock) {
+                const eliminatedLeadmites = Math.min(userStock.quantity, items.heavyLeadmite.quantity);
+                userStock.quantity -= eliminatedLeadmites;
+                game.score += eliminatedLeadmites * 3; 
+                await stockDAO.updateStock(userStock);
+                ennemyInfo += `You got rid of ${eliminatedLeadmites} heavy leadmite(s)! `;
+            }
+        }
+    
+        // Handle leadmite consumption
+        const leadmiteMessage = await ItemController.handleLeadmites(user, stockDAO);
+    
         const rewards = await ItemController.getRoundReward(game);
         const ennemy = await ItemController.spawnEnnemy(game);
         const inventory = await ItemController.getUserStocks(user.id);
-
+    
         return res.status(200).json({
-            message: "You guessed correctly! Toss again!",
+            message: `You guessed correctly! Toss again! ${ennemyInfo} ${leadmiteMessage}`,
             coinResult,
             score: game.score,
-            rewards:rewards?rewards:'no rewards',
+            rewards: rewards ? rewards : "no rewards",
             ...(ennemy && { ennemy }),
             inventory,
         });
     }
+    
 
     static async springSave(req:Request,res:Response,user:User,userSpringStock:Stock,existingSpring:GameItem|null,game:Game,gameDAO:GameDAO,stockDAO:StockDAO,gameItemDAO:GameItemDAO,coinResult:string):Promise<Response>{
         userSpringStock.quantity -= 1;
@@ -342,14 +398,19 @@ export class GameController {
 
         await gameDAO.updateGame(game);
 
+        const leadmiteMessage = await ItemController.handleLeadmites(user, stockDAO);
+
         const rewards = await ItemController.getRoundReward(game);
+        const ennemy = await ItemController.spawnEnnemy(game);
         const inventory = await ItemController.getUserStocks(user.id);
 
+
         return res.status(200).json({
-            message: guess === coinResult ? "You guessed correctly! Score doubled!" : "You guessed wrong! Score halved!",
+            message: guess === coinResult ? "You guessed correctly! Score doubled! "+leadmiteMessage : "You guessed wrong! Score halved! "+leadmiteMessage,
             coinResult,
             score: game.score,
             rewards:rewards?rewards:'no rewards',
+            ...(ennemy && { ennemy }),
             inventory,
         });
     }
@@ -383,12 +444,18 @@ export class GameController {
 
         await gameDAO.updateGame(game);
 
+        const leadmiteMessage = await ItemController.handleLeadmites(user, stockDAO);
+
+        const rewards = await ItemController.getRoundReward(game);
+        const ennemy = await ItemController.spawnEnnemy(game);
         const inventory = await ItemController.getUserStocks(user.id);
 
         return res.status(200).json({
             message: guess === coinResult ? "You guessed correctly! 2 points!" : "You guessed wrong! -10 points!",
             coinResult,
             score: game.score,
+            rewards:rewards?rewards:'no rewards',
+            ...(ennemy && { ennemy }),
             inventory,
         });
     }

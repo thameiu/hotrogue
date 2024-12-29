@@ -10,6 +10,7 @@ import { AuthController } from "./AuthController";
 import { GameItemDAO } from "../dao/GameItemDAO";
 import { GameItem } from "../models/GameItem";
 import { Responses } from "swagger-jsdoc";
+import { User } from "../models/User";
 
 export class ItemController {
 
@@ -170,16 +171,16 @@ export class ItemController {
         const itemDAO = new ItemDAO(db);
         const items = await itemDAO.getItems();
     
-        if (!items || items.length === 0 || game.score < 10) {
-            return null; // No items available to reward
+        if (!items || items.length === 0 || game.score < 1) {
+            console.log('nonono ennemoies')
+            return null; 
         }
     
-        // Exclude specific items
         const includedEnnemies = ['leadmite', 'heavyLeadmite', 'leadmiteQueen'];
         const ennemies = items.filter(item => includedEnnemies.includes(item.itemId));
 
         if (ennemies.length === 0) {
-            return null; // No eligible items to reward
+            return null; 
         }
     
         // Randomly pick an item
@@ -356,26 +357,71 @@ export class ItemController {
             }
         }
 
-    static async formatItemName(itemId: string): Promise<string> {
-        const db = await initDB();
-        const itemDAO = new ItemDAO(db);
-        const item = await itemDAO.getItemById(itemId);
-        return item ? item.name : itemId;
-    }
+        static async formatItemName(itemId: string): Promise<string> {
+            const db = await initDB();
+            const itemDAO = new ItemDAO(db);
+            const item = await itemDAO.getItemById(itemId);
+            return item ? item.name : itemId;
+        }
 
-    static async getGameItems(gameId:number): Promise<GameItem[]>{
-        const db = await initDB();
-        const gameItemDAO = new GameItemDAO(db);
-        const gameItems = await gameItemDAO.getAllGameItemsByGame(gameId);
-        return gameItems;
-    }
-    
-    static async getGameItemByItem(gameId:number, itemId:string): Promise<GameItem | null>{
-        const db = await initDB();
-        const gameItemDAO = new GameItemDAO(db);
-        const gameItem = await gameItemDAO.getGameItemByGameAndItem(gameId, itemId);
-        return gameItem;
-    }
+        static async getGameItems(gameId:number): Promise<GameItem[]>{
+            const db = await initDB();
+            const gameItemDAO = new GameItemDAO(db);
+            const gameItems = await gameItemDAO.getAllGameItemsByGame(gameId);
+            return gameItems;
+        }
+        
+        static async getGameItemByItem(gameId:number, itemId:string): Promise<GameItem | null>{
+            const db = await initDB();
+            const gameItemDAO = new GameItemDAO(db);
+            const gameItem = await gameItemDAO.getGameItemByGameAndItem(gameId, itemId);
+            return gameItem;
+        }
+
+        static async handleLeadmites(
+            user: User,
+            stockDAO: StockDAO
+        ): Promise<string> {
+            const leadmiteStock = await stockDAO.getStockByUserAndItem(user.id, "leadmite");
+            const heavyLeadmiteStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLeadmite");
+        
+            let leadmites = leadmiteStock?.quantity || 0;
+            let heavyLeadmites = heavyLeadmiteStock?.quantity || 0;
+        
+            let eatenLeads = 0;
+            let eatenHeavyLeads = 0;
+        
+            if (leadmites > 0) {
+                const leadStock = await stockDAO.getStockByUserAndItem(user.id, "lead");
+                if (leadStock) {
+                    eatenLeads = Math.min(leadmites, leadStock.quantity); 
+                    leadStock.quantity -= eatenLeads;
+                    await stockDAO.updateStock(leadStock);
+                }
+            }
+        
+            if (heavyLeadmites > 0) {
+                const heavyLeadStock = await stockDAO.getStockByUserAndItem(user.id, "heavyLead");
+                if (heavyLeadStock) {
+                    eatenHeavyLeads = Math.min(heavyLeadmites, heavyLeadStock.quantity); 
+                    heavyLeadStock.quantity -= eatenHeavyLeads;
+                    await stockDAO.updateStock(heavyLeadStock);
+                }
+            }
+        
+            let leadmiteMessage = "";
+            if (leadmites > 0 || heavyLeadmites > 0) {
+                leadmiteMessage = `(${leadmites} leadmites and ${heavyLeadmites} heavyLeadmites are in your inventory. `;
+                if (eatenLeads > 0 || eatenHeavyLeads > 0) {
+                    leadmiteMessage += `${eatenLeads} lead(s) and ${eatenHeavyLeads} heavyLead(s) have been eaten.)`;
+                } else {
+                    leadmiteMessage += "No leads or heavy leads were eaten this round.)";
+                }
+            }
+        
+            return leadmiteMessage;
+        }
+        
     
 }
     
