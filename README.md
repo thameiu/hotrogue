@@ -37,7 +37,7 @@ password
 Then, you must keep the refresh token (given in login and register) to get access tokens, at http://localhost:3000/auth/refresh-token,
 but you can also login again.
 
-You need an access-token to start a game, toss a coin, and check your inventory (Authorization header in every case).
+You need an access token to start a game, toss a coin, and check your inventory (Authorization header in every case).
 
 # HOW TO PLAY
 

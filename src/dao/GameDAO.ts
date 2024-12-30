@@ -29,6 +29,32 @@ export class GameDAO {
         const query = "UPDATE games SET score = ?, status = ? WHERE gameId = ?";
         await this.db.run(query, [game.score, game.status, game.gameId]);
     }
+
+    async getLeaderboard(): Promise<{ place: number; username: string; score: number; category: string }[]> {
+        const rows = await this.db.all(`
+            SELECT 
+                g.score, 
+                g.category, 
+                u.username
+            FROM Games g
+            INNER JOIN (
+                SELECT user, MAX(score) AS maxScore
+                FROM Games
+                GROUP BY user
+            ) grouped
+            ON g.user = grouped.user AND g.score = grouped.maxScore
+            INNER JOIN Users u
+            ON g.user = u.id
+            ORDER BY g.score DESC
+        `);
+
+        return rows.map((row: any, index: number) => ({
+            place: index + 1,
+            username: row.username,
+            score: row.score,
+            category: row.category,
+        }));
+    }
     
 }
 

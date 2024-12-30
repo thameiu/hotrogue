@@ -1,5 +1,6 @@
 import express from 'express';
 import { UserController } from '../controllers/UserController';
+import { adminMiddleware } from '../middleware/adminMiddleware';
 
 const router = express.Router();
 /**
@@ -81,7 +82,7 @@ const router = express.Router();
  *                   type: string
  *                   example: E-mail is already taken
  */
-router.post('/', UserController.createUser as any);
+router.post('/', adminMiddleware as any,UserController.createUser as any);
 
 
 export default router;

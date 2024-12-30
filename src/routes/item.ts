@@ -5,7 +5,7 @@ import { adminMiddleware } from '../middleware/adminMiddleware';
 
 const router = express.Router();
 
-router.use(authMiddleware as any); //TODO : add admin middleware
+router.use(authMiddleware as any);
 
 /**
  * @swagger

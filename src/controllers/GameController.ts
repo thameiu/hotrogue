@@ -446,4 +446,15 @@ export class GameController {
         });
     }
 
+    static async getLeaderboard(req: Request, res: Response): Promise<Response> {
+        try {
+            const db = await initDB();
+            const gameDAO = new GameDAO(db);
+            const leaderboard = await gameDAO.getLeaderboard();
+            return res.status(200).json(leaderboard);
+        } catch (error: Error | any) {
+            return res.status(400).json({ error: error.message });
+        }
+    }
+
 }

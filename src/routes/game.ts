@@ -9,7 +9,7 @@ router.use(authMiddleware as any);
 
 /**
  * @swagger
- * /game/start:
+ * /game:
  *   post:
  *     summary: Start a new game
  *     tags:
@@ -66,7 +66,7 @@ router.use(authMiddleware as any);
  *       500:
  *         description: Internal server error
  */
-router.post('/start', GameController.startGame as any);
+router.post('', GameController.startGame as any);
 
 
 /**
@@ -146,7 +146,7 @@ router.post('/start', GameController.startGame as any);
  *                 message:
  *                   type: string
  *                   description: Outcome message for the player.
- *                   example: "Congratulations! You guessed correctly."
+ *                   example: "You guessed correctly! Toss again!"
  *       400:
  *         description: Bad request (e.g., invalid input or rules violation)
  *         content:
@@ -188,9 +188,69 @@ router.post('/start', GameController.startGame as any);
  *                   type: string
  *                   example: "Internal server error"
  */
-
 router.post('/toss-coin', GameController.tossCoin as any);
 
 
+/**
+ * @swagger
+ * /game/leaderboard:
+ *   get:
+ *     summary: Retrieve the game leaderboard
+ *     tags:
+ *       - Game
+ *     security:
+ *       - jwtAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the leaderboard
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 leaderboard:
+ *                   type: array
+ *                   description: A list of players and their scores
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       username:
+ *                         type: string
+ *                         description: The player's username
+ *                         example: "john_doe"
+ *                       score:
+ *                         type: number
+ *                         description: The player's score
+ *                         example: 150
+ *                       category:
+ *                         type: string
+ *                         description: The category of the game
+ *                         example: "classic"
+ *                       place:
+ *                         type: number
+ *                         description: The player's position in the leaderboard
+ *                         example: 1
+ *       401:
+ *         description: Unauthorized (invalid token)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid token"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+router.get('/leaderboard', GameController.getLeaderboard as any);
 
 export default router;

@@ -11,7 +11,7 @@ export async function initDB() {
     CREATE TABLE IF NOT EXISTS Users (
       id INTEGER PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
-      username TEXT NOT NULL,
+      username TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
       admin BOOLEAN NOT NULL DEFAULT FALSE
     );

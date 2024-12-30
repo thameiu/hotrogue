@@ -19,4 +19,9 @@ export class UserDAO {
         const row = await this.db.get('SELECT * FROM Users WHERE email = ?', [email]);
         return row ? new User(row.id, row.email, row.username, row.password,row.admin) : null;
     }
+
+    async getUserByUsername(username: string): Promise<User | null> {
+        const row = await this.db.get('SELECT * FROM Users WHERE username = ?', [username]);
+        return row ? new User(row.id, row.email, row.username, row.password,row.admin) : null;
+    }
 }

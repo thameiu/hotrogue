@@ -62,6 +62,10 @@ export class AuthController {
             if (existingUser) {
                 return res.status(409).json({ message: 'Email already taken' });
             }
+            const existingUsername = await userDAO.getUserByUsername(dto.username);
+            if (existingUsername) {
+                return res.status(409).json({ message: 'Username already taken' });
+            }
             const hashedPassword = await bcrypt.hash(dto.password, 10);
             const newUser = new User(0, dto.email, dto.username, hashedPassword, false);
             await userDAO.createUser(newUser);
