@@ -1,18 +1,18 @@
 import { Request, Response } from "express";
-import { CreateUserDto } from "../dto/user/create-user.dto";
-import { UserDAO } from "../dao/UserDAO";
-import { User } from "../models/User";
-import { initDB } from "../db/db";
+import { CreateUserDto } from "../../dto/user/create-user.dto";
+import { UserDAO } from "../../dao/UserDAO";
+import { User } from "../../models/User";
+import { initDB } from "../../db/db";
 import bcrypt from 'bcrypt';
-import { StartGameDto } from "../dto/game/start-game.dto";
-import { Game } from "../models/Game";
-import { AuthController } from "./AuthController";
-import { GameDAO } from "../dao/GameDAO";
-import { ItemController } from "./ItemController";
-import { StockDAO } from "../dao/StockDAO";
-import { GameItem } from "../models/GameItem";
-import { GameItemDAO } from "../dao/GameItemDAO";
-import { Stock } from "../models/Stock";
+import { StartGameDto } from "../../dto/game/start-game.dto";
+import { Game } from "../../models/Game";
+import { AuthController } from "../auth/AuthController.controller";
+import { GameDAO } from "../../dao/GameDAO";
+import { ItemController } from "../item/ItemController.controller";
+import { StockDAO } from "../../dao/StockDAO";
+import { GameItem } from "../../models/GameItem";
+import { GameItemDAO } from "../../dao/GameItemDAO";
+import { Stock } from "../../models/Stock";
 
 export class GameController {
     private static nextId = 1;
@@ -221,7 +221,6 @@ export class GameController {
         coinResult: string
     ): Promise<Response> {
         game.score += 1;
-        await gameDAO.updateGame(game);
         const items = req.body.items;
     
         if (items?.lead?.quantity) {
@@ -262,6 +261,8 @@ export class GameController {
                 ennemyInfo += `You got rid of ${eliminatedLeadmites} heavy leadmite(s)! `;
             }
         }
+        
+        await gameDAO.updateGame(game);
     
         const leadmiteMessage = await ItemController.handleLeadmites(user, stockDAO);
     

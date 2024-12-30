@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { initDB } from '../db/db';
 import { UserDAO } from '../dao/UserDAO';
-import { AuthController } from '../controllers/AuthController';
+import { AuthController } from '../controllers/auth/AuthController.controller';
 
 export async function adminMiddleware(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;

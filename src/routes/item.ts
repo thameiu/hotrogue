@@ -1,5 +1,5 @@
 import express from 'express';
-import { ItemController } from '../controllers/ItemController';
+import { ItemController } from '../controllers/item/ItemController.controller';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { adminMiddleware } from '../middleware/adminMiddleware';
 

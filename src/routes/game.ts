@@ -1,5 +1,5 @@
 import express from 'express';
-import { GameController } from '../controllers/GameController';
+import { GameController } from '../controllers/game/GameController.controller';
 import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = express.Router();

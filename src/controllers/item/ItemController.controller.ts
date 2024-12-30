@@ -1,16 +1,16 @@
-import { ItemDAO } from "../dao/ItemDAO";
-import { StockDAO } from "../dao/StockDAO";
-import { initDB } from "../db/db";
-import { CreateItemDto } from "../dto/item/create-item.dto";
-import { Game } from "../models/Game";
-import { Item } from "../models/Item";
+import { ItemDAO } from "../../dao/ItemDAO";
+import { StockDAO } from "../../dao/StockDAO";
+import { initDB } from "../../db/db";
+import { CreateItemDto } from "../../dto/item/create-item.dto";
+import { Game } from "../../models/Game";
+import { Item } from "../../models/Item";
 import { Request, Response } from "express";
-import { Stock } from "../models/Stock";
-import { AuthController } from "./AuthController";
-import { GameItemDAO } from "../dao/GameItemDAO";
-import { GameItem } from "../models/GameItem";
+import { Stock } from "../../models/Stock";
+import { AuthController } from "../auth/AuthController.controller";
+import { GameItemDAO } from "../../dao/GameItemDAO";
+import { GameItem } from "../../models/GameItem";
 import { Responses } from "swagger-jsdoc";
-import { User } from "../models/User";
+import { User } from "../../models/User";
 
 export class ItemController {
 
@@ -44,6 +44,50 @@ export class ItemController {
                 return res.status(400).json({ error: error.message });
             }
             return res.status(400).json({ error: "An unknown error occurred" });
+        }
+    }
+
+    static async updateItem(req: Request, res: Response): Promise<Response> {
+        try {
+            const { itemId } = req.params;
+            const createItemDto = CreateItemDto.fromRequest(req.body);
+
+            if (createItemDto instanceof Error) {
+                return res.status(400).json({ message: createItemDto.message });
+            }
+
+            if (!itemId) {
+                return res.status(400).json({ message: "Item ID is required" });
+            }
+
+            const db = await initDB();
+            const itemDAO = new ItemDAO(db);
+
+            const existingItem = await itemDAO.getItemById(itemId);
+
+            if (!existingItem) {
+                return res.status(404).json({ message: "Item not found" });
+            }
+
+            const updatedItem = new Item(
+                itemId,
+                createItemDto.name,
+                createItemDto.description,
+                createItemDto.rarity,
+                createItemDto.maxQuantity
+            );
+
+            await itemDAO.updateItem(updatedItem);
+
+            return res.status(200).json({
+                message: "Item updated successfully",
+                item: updatedItem,
+            });
+        } catch (error: Error | any) {
+            if (error instanceof Error) {
+                return res.status(500).json({ error: error.message });
+            }
+            return res.status(500).json({ error: "An unknown error occurred" });
         }
     }
 

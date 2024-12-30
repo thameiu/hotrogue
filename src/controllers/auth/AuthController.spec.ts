@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { AuthController } from '../controllers/AuthController';
-import { UserDAO } from '../dao/UserDAO';
-import { initDB } from '../db/db';
-import { User } from '../models/User';
-import { LoginDto } from '../dto/user/login.dto';
+import { AuthController } from './AuthController.controller';
+import { UserDAO } from '../../dao/UserDAO';
+import { initDB } from '../../db/db';
+import { User } from '../../models/User';
+import { LoginDto } from '../../dto/user/login.dto';
 
-jest.mock('../db/db');
-jest.mock('../dao/UserDAO');
+jest.mock('../../db/db');
+jest.mock('../../dao/UserDAO');
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
 

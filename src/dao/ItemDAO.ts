@@ -10,6 +10,17 @@ export class ItemDAO {
         );
     }
 
+    async updateItem(item: Item): Promise<void> {
+        const result = await this.db.run(
+            'UPDATE Items SET name = ?, description = ?, rarity = ?, maxQuantity = ? WHERE itemId = ?',
+            [item.name, item.description, item.rarity, item.maxQuantity, item.itemId]
+        );
+    
+        if (result.changes === 0) {
+            throw new Error(`Item ${item.itemId} not found.`);
+        }
+    }
+
     async getItemById(itemId: string): Promise<Item | null> {
         const row = await this.db.get('SELECT * FROM Items WHERE itemId = ?', [itemId]);
         return row

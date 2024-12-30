@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { CreateUserDto } from "../dto/user/create-user.dto";
-import { UserDAO } from "../dao/UserDAO";
-import { User } from "../models/User";
-import { initDB } from "../db/db";
+import { CreateUserDto } from "../../dto/user/create-user.dto";
+import { UserDAO } from "../../dao/UserDAO";
+import { User } from "../../models/User";
+import { initDB } from "../../db/db";
 import bcrypt from 'bcrypt';
 
 export class UserController {
