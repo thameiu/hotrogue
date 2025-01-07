@@ -64,7 +64,6 @@ router.post('', adminMiddleware as any,ItemController.createItem as any);
  *         description: The ID of the item to retrieve
  *     responses:
  *       200:
- *         description: Successfully retrieved item details
  *         content:
  *           application/json:
  *             schema:
@@ -98,7 +97,78 @@ router.post('', adminMiddleware as any,ItemController.createItem as any);
 
 router.get('/id/:itemId', ItemController.getItemById as any);
 
-
+/**
+ * @swagger
+ * /item/id/{itemId}:
+ *   put:
+ *     summary: Update item details by ID
+ *     tags:
+ *       - Item
+ *     security:
+ *       - jwtAuth: [] # Use the jwtAuth scheme defined in the components
+ *     parameters:
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the item to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               rarity:
+ *                 type: number
+ *               maxQuantity:
+ *                 type: number
+ *             required:
+ *               - name
+ *               - description
+ *               - rarity
+ *               - maxQuantity
+ *     responses:
+ *       200:
+ *         description: Item updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 item:
+ *                   type: object
+ *                   properties:
+ *                     itemId:
+ *                       type: string
+ *                       description: Unique identifier for the item
+ *                     name:
+ *                       type: string
+ *                       description: Name of the item
+ *                     description:
+ *                       type: string
+ *                       description: Description of the item
+ *                     rarity:
+ *                       type: number
+ *                       description: Rarity level of the item
+ *                     maxQuantity:
+ *                       type: number
+ *                       description: Maximum quantity of the item
+ *       400:
+ *         description: Bad request, possibly due to missing or invalid input
+ *       401:
+ *         description: Unauthorized, invalid or missing token
+ *       404:
+ *         description: Item not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/id/:itemId', adminMiddleware as any, ItemController.updateItem as any);
 
 /**
  * @swagger
@@ -116,7 +186,7 @@ router.get('/id/:itemId', ItemController.getItemById as any);
  *         description: The ID of the item to delete
  *     responses:
  *       200:
- *         description: Successfully deleted item
+ *         description: Item deleted successfully
  *         content:
  *           application/json:
  *             schema:
@@ -159,7 +229,6 @@ router.delete('/id/:itemId', adminMiddleware as any, ItemController.deleteItemBy
  *       - Item
  *     responses:
  *       200:
- *         description: Successfully retrieved all items
  *         content:
  *           application/json:
  *             schema:
@@ -202,7 +271,6 @@ router.get('', ItemController.getItems as any);
  *       - jwtAuth: [] # Use the jwtAuth scheme defined in the components
  *     responses:
  *       200:
- *         description: Successfully retrieved inventory
  *         content:
  *           application/json:
  *             schema:

@@ -11,6 +11,7 @@ import { GameItemDAO } from "../../dao/GameItemDAO";
 import { GameItem } from "../../models/GameItem";
 import { Responses } from "swagger-jsdoc";
 import { User } from "../../models/User";
+import { UpdateItemDto } from "../../dto/item/update-item.dto";
 
 export class ItemController {
 
@@ -50,10 +51,10 @@ export class ItemController {
     static async updateItem(req: Request, res: Response): Promise<Response> {
         try {
             const { itemId } = req.params;
-            const createItemDto = CreateItemDto.fromRequest(req.body);
+            const updateItemDto = UpdateItemDto.fromRequest(req.body);
 
-            if (createItemDto instanceof Error) {
-                return res.status(400).json({ message: createItemDto.message });
+            if (updateItemDto instanceof Error) {
+                return res.status(400).json({ message: updateItemDto.message });
             }
 
             if (!itemId) {
@@ -71,10 +72,10 @@ export class ItemController {
 
             const updatedItem = new Item(
                 itemId,
-                createItemDto.name,
-                createItemDto.description,
-                createItemDto.rarity,
-                createItemDto.maxQuantity
+                updateItemDto.name? updateItemDto.name : existingItem.name,
+                updateItemDto.description? updateItemDto.description : existingItem.description,
+                updateItemDto.rarity? updateItemDto.rarity : existingItem.rarity,
+                updateItemDto.maxQuantity? updateItemDto.maxQuantity : existingItem.maxQuantity
             );
 
             await itemDAO.updateItem(updatedItem);
