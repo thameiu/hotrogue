@@ -23,8 +23,8 @@ const router = express.Router();
  *             properties:
  *               category:
  *                 type: string
- *                 description: The category for the game (e.g., trivia, puzzles).
- *                 example: "trivia"
+ *                 description: The category for the game (classic, itemless).
+ *                 example: "classic"
  *             required:
  *               - category
  *     responses:

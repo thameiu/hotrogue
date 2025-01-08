@@ -260,7 +260,7 @@ router.get('', ItemController.getItems as any);
  * @swagger
  * /item/inventory:
  *   get:
- *     summary: Get the inventory of a user
+ *     summary: Get inventory of the logged in user
  *     tags:
  *       - Item
  *     security:
@@ -289,5 +289,42 @@ router.get('', ItemController.getItems as any);
  *         description: Unauthorized, invalid or missing token
  */
 router.get('/inventory', rbacMiddleware(['player','admin','superAdmin']) as any, ItemController.getUserInventory as any);
+
+/**
+ * @swagger
+ * /item/stock:
+ *   post:
+ *     summary: Create or update stock 
+ *     tags:
+ *       - Item
+ *     security:
+ *       - jwtAuth: [] # Use the jwtAuth scheme defined in the components
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               itemId:
+ *                 type: string
+ *                 description: The ID of the item
+ *               quantity:
+ *                 type: number
+ *                 description: The quantity of the item in stock
+ *             required:
+ *               - itemId
+ *               - quantity
+ *     responses:
+ *       200:
+ *         description: Stock created or updated successfully
+ *       400:
+ *         description: Bad request, possibly due to missing or invalid input
+ *       401:
+ *         description: Unauthorized, invalid or missing token
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/stock",  rbacMiddleware(['admin','superAdmin']) as any,ItemController.createOrUpdateStock as any);
 
 export default router;

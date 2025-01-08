@@ -12,6 +12,7 @@ import { GameItem } from "../../models/GameItem";
 import { Responses } from "swagger-jsdoc";
 import { User } from "../../models/User";
 import { UpdateItemDto } from "../../dto/item/update-item.dto";
+import { UserDAO } from "../../dao/UserDAO";
 
 export class ItemController {
 
@@ -156,6 +157,64 @@ export class ItemController {
             return res.status(500).json({ error: "An unknown error occurred" });
         }
     }
+
+    static async createOrUpdateStock(req: Request, res: Response): Promise<Response> {
+        try {
+            const { itemId, username, quantity } = req.body;
+    
+            if (!itemId || !username || !quantity || quantity == 0) {
+                return res.status(400).json({
+                    message: "itemId, username, and quantity are required. Quantity must be greater or less than 0.",
+                });
+            }
+    
+            const db = await initDB();
+            const stockDAO = new StockDAO(db);
+            const itemDAO = new ItemDAO(db);
+            const userDAO = new UserDAO(db); 
+    
+            const item = await itemDAO.getItemById(itemId);
+            if (!item) {
+                return res.status(404).json({ message: "Item not found" });
+            }
+    
+            const user = await userDAO.getUserByUsername(username);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+    
+            const existingStock = await stockDAO.getStockByUserAndItem(username, itemId);
+    
+            if (existingStock) {
+                existingStock.quantity += parseInt(quantity);
+                await stockDAO.updateStock(existingStock);
+                
+                return res.status(200).json({
+                    message: "Stock updated successfully",
+                    stock: existingStock.quantity>0? existingStock : "Stock deleted successfully",
+                });
+            } else {
+                if (quantity < 0) {
+                    return res.status(400).json({
+                        message: "Stock not found. Cannot update stock with a negative quantity",
+                    });
+                }
+                const newStock = new Stock(itemId, username, parseInt(quantity));
+                await stockDAO.createStock(newStock);
+    
+                return res.status(201).json({
+                    message: "Stock created successfully",
+                    stock: newStock,
+                });
+            }
+        } catch (error: Error | any) {
+            if (error instanceof Error) {
+                return res.status(500).json({ error: error.message });
+            }
+            return res.status(500).json({ error: "An unknown error occurred" });
+        }
+    }
+    
     
 
     static async getRoundReward(game: Game): Promise<{ name: string; description: string; quantity: number } | null> {
