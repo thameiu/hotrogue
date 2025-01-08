@@ -1,12 +1,8 @@
 import express from 'express';
 import { ItemController } from '../controllers/item/ItemController.controller';
-import { authMiddleware } from '../middleware/authMiddleware';
-import { adminMiddleware } from '../middleware/adminMiddleware';
+import { rbacMiddleware } from '../middleware/rbacMiddleware';
 
 const router = express.Router();
-
-router.use(authMiddleware as any);
-
 /**
  * @swagger
  * /item:
@@ -45,7 +41,7 @@ router.use(authMiddleware as any);
  *       401:
  *         description: Unauthorized
  */
-router.post('', adminMiddleware as any,ItemController.createItem as any);
+router.post('', rbacMiddleware(['admin']) as any,ItemController.createItem as any);
 
 
 /**
@@ -168,7 +164,7 @@ router.get('/id/:itemId', ItemController.getItemById as any);
  *       500:
  *         description: Internal server error
  */
-router.put('/id/:itemId', adminMiddleware as any, ItemController.updateItem as any);
+router.put('/id/:itemId', rbacMiddleware(['admin']) as any, ItemController.updateItem as any);
 
 /**
  * @swagger
@@ -217,7 +213,7 @@ router.put('/id/:itemId', adminMiddleware as any, ItemController.updateItem as a
  *       500:
  *         description: Internal server error
  */
-router.delete('/id/:itemId', adminMiddleware as any, ItemController.deleteItemById as any);
+router.delete('/id/:itemId', rbacMiddleware(['admin']) as any, ItemController.deleteItemById as any);
 
 
 /**
@@ -292,8 +288,6 @@ router.get('', ItemController.getItems as any);
  *       401:
  *         description: Unauthorized, invalid or missing token
  */
-router.get('/inventory', ItemController.getUserInventory as any);
-
-
+router.get('/inventory', rbacMiddleware(['player','admin','superAdmin']) as any, ItemController.getUserInventory as any);
 
 export default router;

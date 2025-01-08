@@ -1,5 +1,6 @@
 import express from 'express';
 import { AuthController } from '../controllers/auth/AuthController.controller';
+import { rbacMiddleware } from '../middleware/rbacMiddleware';
 
 const router = express.Router();
 

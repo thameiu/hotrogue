@@ -13,27 +13,27 @@ const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
     info: {
-      title: 'Your API',
+      title: 'Tosser of Coin API',
       version: '1.0.0',
-      description: 'API documentation with authentication',
+      description: 'This is the API documentation for the Tosser of Coin game API. It includes endpoints for user management, authentication, game logic, and item handling. The API uses JWT for authentication and role-based access control.',
     },
     components: {
       securitySchemes: {
-        jwtAuth: { // Renaming to reflect the usage
+        jwtAuth: { 
           type: 'apiKey',
-          in: 'header', // The JWT will be passed in the header
-          name: 'Authorization', // Specify the header name
-          description: 'JWT token without Bearer prefix (e.g., "Authorization: <your_token>")',
+          in: 'header',
+          name: 'Authorization', 
+          description: 'JWT token for authentication and role checking', 
         },
       },
     },
     security: [
       {
-        jwtAuth: [], // Apply the custom JWT scheme globally
+        jwtAuth: [], 
       },
     ],
   },
-  apis: ['./src/routes/*.ts'], // Path to your route files
+  apis: ['./src/routes/*.ts'],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
@@ -45,7 +45,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-app.use('/users', userRoutes);
+app.use('/user', userRoutes);
 app.use('/auth', authRoutes);
 app.use('/game', gameRoutes);
 app.use('/item', itemRoutes);

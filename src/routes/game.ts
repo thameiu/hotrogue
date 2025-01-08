@@ -1,10 +1,8 @@
 import express from 'express';
 import { GameController } from '../controllers/game/GameController.controller';
-import { authMiddleware } from '../middleware/authMiddleware';
+import { rbacMiddleware } from '../middleware/rbacMiddleware';
 
 const router = express.Router();
-
-router.use(authMiddleware as any);
 
 
 /**
@@ -66,7 +64,7 @@ router.use(authMiddleware as any);
  *       500:
  *         description: Internal server error
  */
-router.post('', GameController.startGame as any);
+router.post('', rbacMiddleware(['player','admin','superAdmin']) as any,GameController.startGame as any);
 
 
 /**
@@ -188,8 +186,7 @@ router.post('', GameController.startGame as any);
  *                   type: string
  *                   example: "Internal server error"
  */
-router.post('/toss-coin', GameController.tossCoin as any);
-
+router.post('/toss-coin', rbacMiddleware(['player','admin','superAdmin']) as any,GameController.tossCoin as any);
 
 /**
  * @swagger

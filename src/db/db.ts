@@ -13,7 +13,7 @@ export async function initDB() {
       email TEXT NOT NULL UNIQUE,
       username TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
-      admin BOOLEAN NOT NULL DEFAULT FALSE
+      role TEXT NOT NULL DEFAULT 'player'
     );
     
     CREATE TABLE IF NOT EXISTS Items (

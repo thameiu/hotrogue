@@ -62,7 +62,7 @@ describe("GameController", () => {
         // });
 
         it("should return 201 and create a new game if no ongoing game exists", async () => {
-            const mockUser = { id: 1, username: "testuser", email: "test@example.com", password: "password123", admin: false, getId: jest.fn(), getUsername: jest.fn(), getEmail: jest.fn(), getPassword: jest.fn(), isAdmin: jest.fn() };
+            const mockUser = { id: 1, username: "testuser", email: "test@example.com", password: "password123", role: 'player', getId: jest.fn(), getUsername: jest.fn(), getEmail: jest.fn(), getPassword: jest.fn(), getRole: jest.fn() };
             const mockStartGameDto = { category: "classic" };
 
             req.body = mockStartGameDto;

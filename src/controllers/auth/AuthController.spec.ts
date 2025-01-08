@@ -57,7 +57,7 @@ describe('AuthController', () => {
 
         it('should return 200 with tokens on successful login', async () => {
             req.body = { email: 'test@example.com', password: 'password123' };
-            const mockUser = new User(1, 'test@example.com', 'testuser', 'hashedPassword', false);
+            const mockUser = new User(1, 'test@example.com', 'testuser', 'hashedPassword', 'player');
             jest.spyOn(UserDAO.prototype, 'getUserByMail').mockResolvedValue(mockUser);
             jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
             jest.spyOn(jwt, 'sign').mockImplementation(() => 'mockAccessToken');
@@ -76,7 +76,7 @@ describe('AuthController', () => {
     describe('register', () => {
         it('should return 409 if the email is already taken', async () => {
             req.body = { email: 'test@example.com', username: 'testuser', password: 'password123', passwordConfirm:'password123' };
-            jest.spyOn(UserDAO.prototype, 'getUserByMail').mockResolvedValue(new User(1, 'test@example.com', 'testuser', 'hashedPassword', false));
+            jest.spyOn(UserDAO.prototype, 'getUserByMail').mockResolvedValue(new User(1, 'test@example.com', 'testuser', 'hashedPassword', 'player'));
 
             await AuthController.register(req as Request, res as Response);
             expect(res.status).toHaveBeenCalledWith(409);

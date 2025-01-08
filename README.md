@@ -89,11 +89,14 @@ Then, to play, post at http://localhost:3000/game/toss-coin, with a JSON body li
 ## DOCUMENTATION
 
 To get information about the API, you can check the OpenAPI documentation at http://localhost:3000/api/documentation.
+
 It also lets you tests every endpoint, with example data.
 
 Most endpoints need authentification.
 
 Create, update, and delete routes for items need admin rights.
+
+User role is checked by a Role-based access control middleware.
 
 # TESTS
 

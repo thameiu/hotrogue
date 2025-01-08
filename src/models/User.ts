@@ -4,7 +4,7 @@ export class User {
       public email: string,
       public username: string,
       public password: string,
-      public admin: boolean,
+      public role: string,
     ) {}
 
     getId() {
@@ -23,7 +23,7 @@ export class User {
       return this.password;
     }
 
-    isAdmin() {
-      return this.admin;
+    getRole() {
+      return this.role;
     }
 }

@@ -3,7 +3,7 @@ export class CreateUserDto {
         public email: string,
         public username: string,
         public password: string,
-        public admin: boolean = false,
+        public role: string = 'player',
     ) {}
 
     static fromRequest(body: any): CreateUserDto | Error {

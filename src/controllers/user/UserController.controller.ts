@@ -33,7 +33,7 @@ export class UserController {
                 createUserDto.email,
                 createUserDto.username,
                 hashedPassword,
-                createUserDto.admin
+                createUserDto.role
             );
     
             await userDAO.createUser(newUser);
@@ -53,6 +53,97 @@ export class UserController {
             return res.status(400).json({ error: "An unknown error occurred" });
         }
     }
+
+    static async setAdmin(req: Request, res: Response): Promise<Response> {
+        try {
+            const { username } = req.params;
+
+            if (!username) {
+                return res.status(400).json({ message: "Username is required" });
+            }
+
+            const db = await initDB();
+            const userDAO = new UserDAO(db);
+
+            const user = await userDAO.getUserByUsername(username);
+
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            if (user.role === "admin") {
+                user.role = "player";
+                await userDAO.updateUser(user);
+
+                return res.status(200).json({
+                    message: `User ${username} has been demoted to player`,
+                    user: { id: user.id, username: user.username, role: user.role },
+                });
+            }
+                
+            user.role = "admin";
+            await userDAO.updateUser(user);
+
+            return res.status(200).json({
+                message: `User ${username} has been granted admin privileges`,
+                user: { id: user.id, username: user.username, role: user.role },
+            });
+        } catch (error: Error | any) {
+            if (error instanceof Error) {
+                return res.status(400).json({ error: error.message });
+            }
+            return res.status(400).json({ error: "An unknown error occurred" });
+        }
+    }
     
 
+    static async banUser(req: Request, res: Response): Promise<Response> {
+        try {
+            const { username } = req.params;
+    
+            if (!username) {
+                return res.status(400).json({ message: "Username is required" });
+            }
+    
+            const db = await initDB();
+            const userDAO = new UserDAO(db);
+    
+            const user = await userDAO.getUserByUsername(username);
+    
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            if (user.role === "admin" || user.role === "superadmin") {
+                return res.status(400).json({
+                    message: `User ${username} is an admin and cannot be banned`,
+                    user: { id: user.id, username: user.username, role: user.role },
+                });
+            }
+    
+            if (user.role === "banned") {
+                user.role = "player";
+                await userDAO.updateUser(user);
+                return res.status(200).json({
+                    message: `User ${username} has been unbanned`,
+                    user: { id: user.id, username: user.username, role: user.role },
+                });
+            }
+    
+            user.role = "banned";
+            await userDAO.updateUser(user);
+    
+            return res.status(200).json({
+                message: `User ${username} has been banned`,
+                user: { id: user.id, username: user.username, role: user.role },
+            });
+            
+        } catch (error: Error | any) {
+            if (error instanceof Error) {
+                return res.status(400).json({ error: error.message });
+            }
+            return res.status(400).json({ error: "An unknown error occurred" });
+        }
+    }
+    
 }

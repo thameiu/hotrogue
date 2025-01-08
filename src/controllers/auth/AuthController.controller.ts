@@ -6,6 +6,8 @@ import { initDB } from '../../db/db';
 import { User } from '../../models/User';
 import { LoginDto } from '../../dto/user/login.dto';
 import { RegisterDto } from '../../dto/user/register.dto';
+import { StockDAO } from '../../dao/StockDAO';
+import { Stock } from '../../models/Stock';
 
 const ACCESS_TOKEN_SECRET = 'jhfjdtghjT65Y656Y8dygvcbdsv:mz;d:c,ek;sjdfkl;ersldfyueiosepàz)eo"azzorubctd"gèzeh7E823B2C EU3NCD?98ZYERDCUYX3NDRC8C 8ZREIYDHC UYEUY uydrdszà"esroçuz-syertyo"erlgmpdlrxudhfdsteg';
 const REFRESH_TOKEN_SECRET = '765Y41¨¨M%X§£¨P^piyqscgukjshef c_orf oz  zd$*zd$z$fidjhy"yu"tdgbz-h-<--(<65678927E823B2C EU3NCD?98ZYERDCUYX3NDRC8C 8ZREIYDHC UYEUY 7N UYF?89 E4O9R°93 ZITTF  OIDEP /% §M IYEF66JZY4 J 968R eff';
@@ -67,8 +69,20 @@ export class AuthController {
                 return res.status(409).json({ message: 'Username already taken' });
             }
             const hashedPassword = await bcrypt.hash(dto.password, 10);
-            const newUser = new User(0, dto.email, dto.username, hashedPassword, false);
+            const newUser = new User(0, dto.email, dto.username, hashedPassword, 'player');
             await userDAO.createUser(newUser);
+
+            const createdUser = await userDAO.getUserByMail(dto.email);
+
+            if (!createdUser) {
+                return res.status(500).json({ message: 'Internal server error' });
+            }
+            const stockDAO = new StockDAO(db);
+            const leadStock = new Stock('lead', createdUser.id, 10);
+            const heavyLeadStock = new Stock('heavyLead', createdUser.id, 5);
+            await stockDAO.createStock(leadStock);
+            await stockDAO.createStock(heavyLeadStock);
+        
             return res.status(201).json({
                 message: "Account created successfully",
                 user: { 
