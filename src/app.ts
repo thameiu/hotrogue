@@ -56,7 +56,7 @@ app.get("/", (req, res) => res.send("You are the tosser of coin. Your mission ? 
 app.use('/api/documentation', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Tosser of Coin API server running on http://localhost:${PORT}`);
 });
 
 export default app;
