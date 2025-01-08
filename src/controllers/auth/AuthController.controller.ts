@@ -80,11 +80,11 @@ export class AuthController {
             if (!createdUser) {
                 return res.status(500).json({ message: 'Internal server error' });
             }
-            const stockDAO = new StockDAO(db);
-            const leadStock = new Stock('lead', createdUser.id, 10);
-            const heavyLeadStock = new Stock('heavyLead', createdUser.id, 5);
-            await stockDAO.createStock(leadStock);
-            await stockDAO.createStock(heavyLeadStock);
+            // const stockDAO = new StockDAO(db);
+            // const leadStock = new Stock('lead', createdUser.id, 10);
+            // const heavyLeadStock = new Stock('heavyLead', createdUser.id, 5);
+            // await stockDAO.createStock(leadStock);
+            // await stockDAO.createStock(heavyLeadStock);
         
             return res.status(201).json({
                 message: "Account created successfully",

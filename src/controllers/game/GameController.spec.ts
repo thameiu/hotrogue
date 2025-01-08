@@ -31,36 +31,14 @@ describe("GameController", () => {
     });
 
     describe("startGame", () => {
-        // it("should return 401 if the token is invalid", async () => {
-        //     jest.spyOn(AuthController, "getUserByToken").mockResolvedValue(null);
+        it("should return 400 and an error message if no category is chosen", async () => {
+            jest.spyOn(AuthController, "getUserByToken").mockResolvedValue(null);
 
-        //     await GameController.startGame(req as Request, res as Response);
-        //     expect(res.status).toHaveBeenCalledWith(401);
-        //     expect(res.json).toHaveBeenCalledWith({ message: "Invalid token" });
-        // });
+            await GameController.startGame(req as Request, res as Response);
 
-        // it("should return 400 if the user already has an ongoing game", async () => {
-        //     const mockUser = { id: 1, username: "testuser", email: "test@example.com", password: "password123", admin: false, getId: jest.fn(), getUsername: jest.fn(), getEmail: jest.fn(), getPassword: jest.fn(), isAdmin: jest.fn() };
-        //     jest.spyOn(AuthController, "getUserByToken").mockResolvedValue(mockUser);
-
-        //     const mockStartGameDto = { category: "classic" };
-
-        //     req.body = mockStartGameDto;
-
-        //     const mockGame = new Game(1, mockUser.id, 0, "classic", "ongoing");
-        //     const ongoingGameSpy = jest.spyOn(GameDAO.prototype, "getOngoingGame").mockResolvedValue(null);
-
-
-
-        //     await GameController.startGame(req as Request, res as Response);
-        //     await GameController.startGame(req as Request, res as Response);
-
-
-        //     expect(ongoingGameSpy).toHaveBeenCalledWith(mockUser.id);
-        //     expect(res.status).toHaveBeenCalledWith(400);
-        //     expect(res.json).toHaveBeenCalledWith({ error: "You already have an ongoing game" });
-        // });
-
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ error: "Invalid data: choose a valid category" });
+        });
         it("should return 201 and create a new game if no ongoing game exists", async () => {
             const mockUser = { id: 1, username: "testuser", email: "test@example.com", password: "password123", role: 'player', getId: jest.fn(), getUsername: jest.fn(), getEmail: jest.fn(), getPassword: jest.fn(), getRole: jest.fn() };
             const mockStartGameDto = { category: "classic" };
