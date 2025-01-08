@@ -35,6 +35,9 @@ export class AuthController {
             const isPasswordValid = await bcrypt.compare(dto.password, user.password);
             if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' });
 
+            if (user.role === 'banned') {
+                return res.status(403).json({ message: 'Forbidden: You have been banned from Tosser of Coin.' });
+            }
             const accessToken = generateAccessToken(user.id);
             const refreshToken = generateRefreshToken(user.id);
 
