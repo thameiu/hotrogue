@@ -41,7 +41,7 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.post('', rbacMiddleware(['admin']) as any,ItemController.createItem as any);
+router.post('', rbacMiddleware(['superAdmin','admin']) as any,ItemController.createItem as any);
 
 
 /**
@@ -164,7 +164,7 @@ router.get('/id/:itemId', ItemController.getItemById as any);
  *       500:
  *         description: Internal server error
  */
-router.put('/id/:itemId', rbacMiddleware(['admin']) as any, ItemController.updateItem as any);
+router.put('/id/:itemId', rbacMiddleware(['superAdmin','admin']) as any, ItemController.updateItem as any);
 
 /**
  * @swagger
@@ -213,7 +213,7 @@ router.put('/id/:itemId', rbacMiddleware(['admin']) as any, ItemController.updat
  *       500:
  *         description: Internal server error
  */
-router.delete('/id/:itemId', rbacMiddleware(['admin']) as any, ItemController.deleteItemById as any);
+router.delete('/id/:itemId', rbacMiddleware(['superAdmin','admin']) as any, ItemController.deleteItemById as any);
 
 
 /**
